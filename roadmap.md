@@ -1,5 +1,6 @@
-# Sidebar and Search refinement
-- [x] Simplify sidebar branding, empty suggestions, and main header controls.
-- [x] Add memory-only Incognito Chat without saving private activity.
-- [x] Align Search back button and search bar with scrolling pill filters.
-- [x] Verify UI and privacy behavior.
+# Vision workspace
+- [ ] Rename all visible branding to Vision.
+- [ ] Add Images, Videos, Library, Projects, and Integrations sidebar pages.
+- [ ] Add creation-only workspaces with eight square scrollable references.
+- [ ] Keep existing browser-only limitations explicit for generation and service connections.
+- [ ] Verify navigation, reference submission, and project actions.

@@ -32,6 +32,7 @@ import { Route as AdminSystemRouteImport } from './routes/admin.system'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AppAccountRouteImport } from './routes/app.account'
 import { Route as AppInboxRouteImport } from './routes/app.inbox'
+import { Route as AppIncognitoRouteImport } from './routes/app.incognito'
 import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
 import { Route as AppNewRouteImport } from './routes/app.new'
 import { Route as AppProspectingRouteImport } from './routes/app.prospecting'
@@ -158,6 +159,11 @@ const AppInboxRoute = AppInboxRouteImport.update({
   path: '/app/inbox',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIncognitoRoute = AppIncognitoRouteImport.update({
+  id: '/app/incognito',
+  path: '/app/incognito',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
   id: '/app/integrations',
   path: '/app/integrations',
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/app/account': typeof AppAccountRoute
   '/app/inbox': typeof AppInboxRoute
+  '/app/incognito': typeof AppIncognitoRoute
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/new': typeof AppNewRoute
   '/app/prospecting': typeof AppProspectingRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/app/account': typeof AppAccountRoute
   '/app/inbox': typeof AppInboxRoute
+  '/app/incognito': typeof AppIncognitoRoute
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/new': typeof AppNewRoute
   '/app/prospecting': typeof AppProspectingRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/app/account': typeof AppAccountRoute
   '/app/inbox': typeof AppInboxRoute
+  '/app/incognito': typeof AppIncognitoRoute
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/new': typeof AppNewRoute
   '/app/prospecting': typeof AppProspectingRoute
@@ -339,6 +348,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/app/account'
     | '/app/inbox'
+    | '/app/incognito'
     | '/app/integrations'
     | '/app/new'
     | '/app/prospecting'
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/app/account'
     | '/app/inbox'
+    | '/app/incognito'
     | '/app/integrations'
     | '/app/new'
     | '/app/prospecting'
@@ -408,6 +419,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/app/account'
     | '/app/inbox'
+    | '/app/incognito'
     | '/app/integrations'
     | '/app/new'
     | '/app/prospecting'
@@ -431,6 +443,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   AppAccountRoute: typeof AppAccountRoute
   AppInboxRoute: typeof AppInboxRoute
+  AppIncognitoRoute: typeof AppIncognitoRoute
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppNewRoute: typeof AppNewRoute
   AppProspectingRoute: typeof AppProspectingRoute
@@ -606,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInboxRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/incognito': {
+      id: '/app/incognito'
+      path: '/app/incognito'
+      fullPath: '/app/incognito'
+      preLoaderRoute: typeof AppIncognitoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/integrations': {
       id: '/app/integrations'
       path: '/app/integrations'
@@ -725,6 +745,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   AppAccountRoute: AppAccountRoute,
   AppInboxRoute: AppInboxRoute,
+  AppIncognitoRoute: AppIncognitoRoute,
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppNewRoute: AppNewRoute,
   AppProspectingRoute: AppProspectingRoute,

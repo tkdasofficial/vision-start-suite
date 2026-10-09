@@ -40,6 +40,8 @@
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
+  --color-new-chat: var(--new-chat);
+  --color-new-chat-foreground: var(--new-chat-foreground);
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-fade-up: fade-up 0.5s ease-out;
@@ -69,6 +71,8 @@
 }
 
 :root {
+    --new-chat: oklch(1 0 0);
+    --new-chat-foreground: oklch(0 0 0);
     --background: 0 0% 100%;
     --foreground: 0 0% 5%;
 
@@ -115,6 +119,8 @@
 
   @media (prefers-color-scheme: dark) {
     :root {
+      --new-chat: oklch(0 0 0);
+      --new-chat-foreground: oklch(1 0 0);
       --background: 0 0% 7%;
       --foreground: 0 0% 93%;
 

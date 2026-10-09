@@ -1,6 +1,7 @@
 import { User, Settings, FileText, Shield, HelpCircle, LogOut, Clock, Crown, LayoutDashboard, Inbox } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
 import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,15 +22,15 @@ const ProfileMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="w-8 h-8 rounded-full bg-foreground/10 flex items-center justify-center hover:bg-foreground/15 transition-colors">
+        <Button variant="secondary" size="icon" aria-label="Open profile menu" title="Profile" className="h-11 w-11 shrink-0 rounded-full border border-sidebar-border">
           {profile?.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
           ) : (
             <User className="w-4 h-4 text-foreground" />
           )}
-        </button>
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
+      <DropdownMenuContent align="end" side="top" sideOffset={12} className="w-52">
         {profile && (
           <>
             <div className="px-2 py-1.5">

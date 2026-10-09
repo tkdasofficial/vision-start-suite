@@ -19,4 +19,5 @@
 
 - Specialized Images and Videos routes reuse the Index workspace with a creation mode and reference presets; creation submissions terminate with the explicit unavailable status in browser-only mode. Why: preserves the shared layout without text-answer fallbacks or unsupported online calls.
 - Sidebar feature links share SidebarFeatures, secondary collection pages share WorkspaceShell, and Library reuses Search filtered to assets. Why: keeps navigation and stored-item discovery consistent.
-- Projects use user-scoped workspace_projects through the existing local backend adapter. Why: supports browser-local project creation, rename, deletion and chat linking without an online backend.
+- Projects use user-scoped workspace_projects through the existing local backend adapter, with creation in a separate view and shared icon definitions. Why: preserves browser-local persistence and consistent icons across creation and listing.
+- Library derives applicable file-type filters from the shared search index metadata. Why: avoids separate storage and keeps Search and Library classifications consistent.

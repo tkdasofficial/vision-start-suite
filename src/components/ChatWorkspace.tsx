@@ -18,6 +18,7 @@ import { analyzeZip } from "@/lib/zip-analyzer";
 import type { TaskMode } from "./TaskModeSelector";
 import { useBackgroundTasks, type BackgroundTask } from "@/hooks/useBackgroundTasks";
 import { supabase, AI_FEATURE_UNAVAILABLE } from "@/lib/cloud/client";
+import { streamChat } from "@/lib/cloud/chat-stream";
 import { useAuth } from "@/context/AuthContext";
 
 type Props = {
@@ -196,13 +197,17 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
     };
     setMessages((prev) => [...prev, userMsg]);
 
-    // Browser-only private chats never create saved rows, background jobs, or
-    // embedded generators that could persist a project independently.
+    // Private chats get real AI replies but never create saved rows or background jobs.
     if (isIncognito) {
-      setMessages((prev) => [...prev, {
-        id: crypto.randomUUID(), role: "assistant", content: AI_FEATURE_UNAVAILABLE,
-        timestamp: new Date(),
-      }]);
+      setIsTyping(true);
+      const history = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
+      try {
+        const reply = await streamChat(history, () => {}, tool?.id);
+        setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: reply || "I couldn't come up with an answer.", timestamp: new Date() }]);
+      } catch (e: any) {
+        setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: `Sorry, an error occurred: ${e.message}`, timestamp: new Date() }]);
+      }
+      setIsTyping(false);
       return;
     }
 
@@ -678,31 +683,21 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
         chatMessages.push({ role: "user", content });
       }
 
-      // Dispatch background task as insurance (runs server-side if user leaves)
-      dispatchBgTask("chat", { messages: chatMessages, toolId: tool?.id, webAnalysis: isWebAnalysis }, chatId || undefined).catch(() => {});
-
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          messages: chatMessages,
-          toolId: tool?.id,
-          webAnalysis: isWebAnalysis,
-          sessionId: chatId,
-          userId: user?.id,
-        }),
-      });
-
-      const data = await resp.json();
-      if (!resp.ok) {
-        throw new Error(data.error || "Chat failed");
-      }
-
-      // Response will arrive via Realtime subscription
-      // Keep typing indicator until message arrives
+      const replyId = crypto.randomUUID();
+      let started = false;
+      const finalText = await streamChat(chatMessages, (full) => {
+        const visible = full.replace(/<think>[\s\S]*?(<\/think>|$)/g, "").trimStart();
+        if (!visible) return;
+        if (!started) { started = true; clearTimeout(phaseTimer); setIsTyping(false); }
+        setMessages((prev) => prev.some((m) => m.id === replyId)
+          ? prev.map((m) => (m.id === replyId ? { ...m, content: visible } : m))
+          : [...prev, { id: replyId, role: "assistant", content: visible, timestamp: new Date(), toolId: tool?.id }]);
+      }, tool?.id);
+      setMessages((prev) => prev.some((m) => m.id === replyId)
+        ? prev.map((m) => (m.id === replyId ? { ...m, content: finalText || m.content } : m))
+        : [...prev, { id: replyId, role: "assistant", content: finalText || "I couldn't come up with an answer. Please try again.", timestamp: new Date(), toolId: tool?.id }]);
+      clearTimeout(phaseTimer);
+      setIsTyping(false);
     } catch (e: any) {
       setMessages((prev) => [...prev, {
         id: (Date.now() + 1).toString(),

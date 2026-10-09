@@ -1,10 +1,11 @@
 import { cn } from "@/lib/utils";
-import { X, Search, Pencil, Trash2, Check, Plug } from "lucide-react";
+import { X, Search, Pencil, Trash2, Check } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
 import { useState } from "react";
 import { useChatHistory } from "@/context/ChatHistoryContext";
 import { Button } from "@/components/ui/button";
 import SidebarActions from "@/components/SidebarActions";
+import SidebarFeatures from "@/components/SidebarFeatures";
 
 type Props = {
   open: boolean;
@@ -55,20 +56,7 @@ const MobileSidebar = ({ open, onClose, onNewChat, onSelectChat, isMainChat, act
           </Button>
         </div>
 
-        {/* Integrations */}
-        <div className="px-3 pt-3">
-          <button
-            onClick={() => { navigate("/app/integrations"); onClose(); }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors border border-transparent hover:border-primary/30 group"
-          >
-            <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-              <Plug className="w-3.5 h-3.5 text-primary" />
-            </div>
-            <span className="flex-1 text-left font-medium">Integrations</span>
-            <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary font-semibold">New</span>
-          </button>
-        </div>
-
+        <SidebarFeatures onNavigate={onClose} />
 
         {chatHistory.length > 0 && (
           <div className="px-3 pt-4 pb-2 min-h-0 flex-1 overflow-y-auto">

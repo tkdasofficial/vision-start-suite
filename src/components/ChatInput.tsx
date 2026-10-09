@@ -4,17 +4,19 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PromptInput, PromptInputTextarea, PromptInputFooter, PromptInputSubmit } from "@/components/ai-elements/prompt-input";
 import TaskModeSelector, { type TaskMode } from "./TaskModeSelector";
+import type { CreationMode } from "@/lib/creation-references";
 import { appendTranscript } from "@/lib/append-transcript";
 
 type Props = {
   toolName?: string;
+  creationMode?: CreationMode;
   onSend: (message: string, imageData?: { base64: string; mimeType: string }, taskMode?: TaskMode) => void;
   onZipUpload?: (file: File) => void;
   onFileConvert?: (file: File) => void;
   disabled?: boolean;
 };
 
-const ChatInput = ({ toolName, onSend, onZipUpload, onFileConvert, disabled }: Props) => {
+const ChatInput = ({ toolName, onSend, onZipUpload, onFileConvert, disabled, creationMode }: Props) => {
   const [value, setValue] = useState("");
   const [attachedImage, setAttachedImage] = useState<{ base64: string; mimeType: string; preview: string } | null>(null);
   const [taskMode, setTaskMode] = useState<TaskMode>("general");
@@ -103,7 +105,7 @@ const ChatInput = ({ toolName, onSend, onZipUpload, onFileConvert, disabled }: P
       setIsListening(false);
     }
     onSend(
-      value.trim() || (attachedImage ? "Analyze this image" : ""),
+      value.trim() || (attachedImage ? creationMode ? "Create using this image as reference" : "Analyze this image" : ""),
       attachedImage ? { base64: attachedImage.base64, mimeType: attachedImage.mimeType } : undefined,
       taskMode
     );
@@ -209,8 +211,8 @@ const ChatInput = ({ toolName, onSend, onZipUpload, onFileConvert, disabled }: P
               value={value}
               onChange={(e) => { setValue(e.target.value); finalTranscriptRef.current = e.target.value; autoResize(); }}
               onKeyDown={handleKeyDown}
-              placeholder={`Ask Copilot${animatedDots}`}
-              aria-label="Message Copilot"
+              placeholder={creationMode ? `Describe your ${creationMode === "images" ? "image" : "video"}` : `Ask Vision${animatedDots}`}
+              aria-label={creationMode ? "Creation prompt" : "Message Vision"}
               rows={1}
               className="w-full bg-transparent text-foreground text-[15px] placeholder:text-muted-foreground resize-none outline-none min-h-[44px] max-h-[200px] py-3 px-4 focus-visible:ring-0! focus-visible:ring-offset-0! shadow-none!"
             />
@@ -221,7 +223,7 @@ const ChatInput = ({ toolName, onSend, onZipUpload, onFileConvert, disabled }: P
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,.zip,application/zip,video/*,audio/*,.txt,.pdf,.html,.md,.csv,.json,.xml,.mp4,.webm,.avi,.mov,.mkv,.mp3,.wav,.ogg,.aac,.flac,.m4a,.bmp,.gif,.ico,.svg,.webp"
+                accept={creationMode ? "image/*" : "image/*,.zip,application/zip,video/*,audio/*,.txt,.pdf,.html,.md,.csv,.json,.xml,.mp4,.webm,.avi,.mov,.mkv,.mp3,.wav,.ogg,.aac,.flac,.m4a,.bmp,.gif,.ico,.svg,.webp"}
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -236,7 +238,7 @@ const ChatInput = ({ toolName, onSend, onZipUpload, onFileConvert, disabled }: P
               >
                 <Paperclip className="w-[18px] h-[18px]" />
                </Button>
-              <TaskModeSelector selectedMode={taskMode} onModeChange={setTaskMode} />
+              {!creationMode && <TaskModeSelector selectedMode={taskMode} onModeChange={setTaskMode} />}
             </div>
 
             <div className={cn(
@@ -277,9 +279,9 @@ const ChatInput = ({ toolName, onSend, onZipUpload, onFileConvert, disabled }: P
           </PromptInputFooter>
         </PromptInput>
 
-        <p className="text-[11px] text-muted-foreground text-center mt-2 hidden sm:block">
+        {!creationMode && <p className="text-[11px] text-muted-foreground text-center mt-2 hidden sm:block">
           Vision may produce inaccurate results. Verify important information.
-        </p>
+        </p>}
       </div>
     </div>
   );

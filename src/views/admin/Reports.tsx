@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 
 const AdminReports = () => {
   const [stats, setStats] = useState({ total: 0, free: 0, pro: 0, business: 0 });

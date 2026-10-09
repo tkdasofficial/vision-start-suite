@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { ArrowLeft, Check, Sparkles, Loader2 } from "lucide-react";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 

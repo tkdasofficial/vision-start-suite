@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { useNavigate } from "@/lib/router-compat";
 import { useAuth } from "@/context/AuthContext";
 import { useChatHistory } from "@/context/ChatHistoryContext";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { assetTypes, collectSearchItems, filterSearchItems, type AssetType, type SearchCategory, type SearchItem } from "@/lib/workspace-search";
 import DesktopSidebar from "@/components/DesktopSidebar";
 import { Button } from "@/components/ui/button";

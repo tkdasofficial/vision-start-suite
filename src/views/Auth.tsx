@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Smartphone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.svg";

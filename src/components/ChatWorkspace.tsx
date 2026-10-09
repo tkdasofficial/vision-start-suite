@@ -17,7 +17,7 @@ import { getCategory } from "@/lib/file-converter";
 import { analyzeZip } from "@/lib/zip-analyzer";
 import type { TaskMode } from "./TaskModeSelector";
 import { useBackgroundTasks, type BackgroundTask } from "@/hooks/useBackgroundTasks";
-import { supabase, LOCAL_AI_UNAVAILABLE } from "@/backend/client";
+import { supabase, AI_FEATURE_UNAVAILABLE } from "@/lib/cloud/client";
 import { useAuth } from "@/context/AuthContext";
 
 type Props = {
@@ -183,7 +183,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
 
   const handleSend = useCallback(async (content: string, imageData?: { base64: string; mimeType: string }, taskMode?: TaskMode) => {
     if (creationMode) {
-      setCreationError(LOCAL_AI_UNAVAILABLE);
+      setCreationError(AI_FEATURE_UNAVAILABLE);
       return;
     }
     const userMsg: ChatMessageType = {
@@ -200,7 +200,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
     // embedded generators that could persist a project independently.
     if (isIncognito) {
       setMessages((prev) => [...prev, {
-        id: crypto.randomUUID(), role: "assistant", content: LOCAL_AI_UNAVAILABLE,
+        id: crypto.randomUUID(), role: "assistant", content: AI_FEATURE_UNAVAILABLE,
         timestamp: new Date(),
       }]);
       return;

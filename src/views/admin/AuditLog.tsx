@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { ScrollText, Loader2 } from "lucide-react";
 
 const AdminAuditLog = () => {

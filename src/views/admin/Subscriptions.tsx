@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, Search, Loader2, Calendar } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-audit";

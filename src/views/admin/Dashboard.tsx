@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import {
   Users, CreditCard, MessageSquare, TrendingUp, Activity, Zap,
   ArrowUpRight, ArrowDownRight, Clock, Server,

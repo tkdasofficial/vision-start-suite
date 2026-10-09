@@ -2,7 +2,7 @@ import { useNavigate } from "@/lib/router-compat";
 import { ArrowLeft, Bell, Inbox as InboxIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 
 type Notification = {
   id: string;

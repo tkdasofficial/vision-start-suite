@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useChatHistory } from "@/context/ChatHistoryContext";
 import { useNavigate } from "@/lib/router-compat";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import WorkspaceShell from "@/components/WorkspaceShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

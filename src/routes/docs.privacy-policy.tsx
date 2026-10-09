@@ -8,6 +8,8 @@ export const Route = createFileRoute("/docs/privacy-policy")({
       { name: "description", content: "Privacy policy in Super Copilot, your all-in-one AI workspace." },
       { property: "og:title", content: "Privacy policy — Super Copilot" },
       { property: "og:description", content: "Privacy policy in Super Copilot, your all-in-one AI workspace." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: RouteComponent,

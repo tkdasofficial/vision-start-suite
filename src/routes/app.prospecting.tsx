@@ -9,6 +9,8 @@ export const Route = createFileRoute("/app/prospecting")({
       { name: "description", content: "Prospecting in Super Copilot, your all-in-one AI workspace." },
       { property: "og:title", content: "Prospecting — Super Copilot" },
       { property: "og:description", content: "Prospecting in Super Copilot, your all-in-one AI workspace." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: RouteComponent,

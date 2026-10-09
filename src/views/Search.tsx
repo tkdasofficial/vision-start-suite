@@ -1,0 +1,106 @@
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowUpRight, FileText, Menu, MessageSquare, Search as SearchIcon, Sparkles, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@/lib/router-compat";
+import { useAuth } from "@/context/AuthContext";
+import { useChatHistory } from "@/context/ChatHistoryContext";
+import { supabase } from "@/backend/client";
+import { collectSearchItems, filterSearchItems, type SearchCategory, type SearchItem } from "@/lib/workspace-search";
+import DesktopSidebar from "@/components/DesktopSidebar";
+import MobileSidebar from "@/components/MobileSidebar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const categories = [
+  { value: "chats", label: "Recent Chats", icon: MessageSquare },
+  { value: "files", label: "Uploaded Files", icon: FileText },
+  { value: "generated", label: "Generated Items", icon: Sparkles },
+] as const;
+
+export default function Search() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { history } = useChatHistory();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<SearchCategory | "all">("all");
+  const [items, setItems] = useState<SearchItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const [sessions, messages, tasks, stories] = await Promise.all([
+          supabase.from("chat_sessions").select("*").eq("user_id", user?.id),
+          supabase.from("chat_messages").select("*"),
+          supabase.from("background_tasks").select("*").eq("user_id", user?.id),
+          supabase.from("story_projects").select("*").eq("user_id", user?.id),
+        ]);
+        if ([sessions, messages, tasks, stories].some((result) => result.error)) throw new Error("Search unavailable");
+        const merged = new Map((messages.data || []).map((message: Record<string, any>) => [message.id, message]));
+        // Cached messages retain file details that older saved rows may not contain.
+        for (const session of sessions.data || []) {
+          let cached: Record<string, any>[] = [];
+          try { cached = JSON.parse(localStorage.getItem(`sc_chat_msgs_${session.id}`) || "[]"); } catch { /* Ignore malformed cache. */ }
+          if (!Array.isArray(cached)) continue;
+          for (const message of cached) {
+            if (!message?.id) continue;
+            const saved = merged.get(message.id) as Record<string, any> | undefined;
+            merged.set(message.id, { ...saved, id: message.id, session_id: session.id, role: message.role, content: message.content, image_url: message.imageUrl || saved?.image_url, created_at: message.timestamp || saved?.created_at || session.created_at, metadata: { ...saved?.metadata, ...message } });
+          }
+        }
+        if (!cancelled) setItems(collectSearchItems(sessions.data || [], [...merged.values()] as Record<string, any>[], tasks.data || [], stories.data || []));
+      } catch { if (!cancelled) setError(true); }
+      finally { if (!cancelled) setLoading(false); }
+    }
+    void load();
+    return () => { cancelled = true; };
+  }, [user, history]);
+
+  const results = useMemo(() => filterSearchItems(items, query, category), [items, query, category]);
+  const sidebarProps = { onNewChat: () => navigate("/app/new"), onSelectChat: (id: string) => navigate(`/app/chat/${id}`), isMainChat: false, chatHistory: history };
+
+  return (
+    <div className="flex h-[100dvh] overflow-hidden bg-background">
+      <DesktopSidebar {...sidebarProps} />
+      <MobileSidebar {...sidebarProps} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <main className="flex min-w-0 flex-1 flex-col">
+        <header className="flex shrink-0 items-center gap-3 bg-transparent px-4 py-2">
+          <Button variant="secondary" size="icon" className="rounded-full lg:hidden" aria-label="Open sidebar" title="Open sidebar" onClick={() => setSidebarOpen(true)}><Menu /></Button>
+          <Button variant="secondary" size="icon" className="rounded-full" aria-label="Back to chat" title="Back to chat" onClick={() => navigate("/app/new")}><ArrowLeft /></Button>
+        </header>
+        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
+          <div className="mx-auto max-w-3xl">
+            <h1 className="mb-6 font-display text-3xl font-semibold">Search</h1>
+            <div className="relative mb-5">
+              <SearchIcon className="absolute left-4 top-4 h-5 w-5 text-muted-foreground" />
+              <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search chats, files, and generated items" placeholder="Search chats, files, and generated items" className="h-13 rounded-full pl-12 pr-12" />
+              {query && <Button variant="ghost" size="icon" aria-label="Clear search" title="Clear search" className="absolute right-2 top-1.5 rounded-full" onClick={() => setQuery("")}><X /></Button>}
+            </div>
+            <Tabs value={category} onValueChange={(value) => setCategory(value as SearchCategory | "all")}>
+              <TabsList className="mb-6 flex h-auto w-full flex-wrap justify-start gap-1 bg-transparent p-0">
+                <TabsTrigger value="all">All</TabsTrigger>
+                {categories.map((entry) => <TabsTrigger key={entry.value} value={entry.value}>{entry.label}</TabsTrigger>)}
+              </TabsList>
+            </Tabs>
+            {loading ? <p role="status" className="py-12 text-center text-muted-foreground">Loading…</p> : error ? <p role="alert" className="py-12 text-center text-destructive">Search couldn’t load. Please try refreshing.</p> : results.length === 0 ? <div className="py-16 text-center text-muted-foreground"><SearchIcon className="mx-auto mb-4 h-8 w-8" /><p>{query ? "No results found" : "No items yet"}</p></div> : categories.filter((entry) => category === "all" || category === entry.value).map((entry) => {
+              const group = results.filter((item) => item.category === entry.value);
+              if (!group.length) return null;
+              return <section key={entry.value} className="mb-8">
+                <h2 className="mb-3 text-sm font-semibold text-muted-foreground">{entry.label} <span className="ml-2">{group.length}</span></h2>
+                <div className="divide-y divide-border">{group.map((item) => {
+                  const content = <><entry.icon className="h-5 w-5 shrink-0 text-muted-foreground" /><div className="min-w-0 flex-1"><p className="truncate font-medium">{item.title}</p><p className="truncate text-sm text-muted-foreground">{item.detail}</p></div>{item.sessionId && <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground" />}</>;
+                  return item.sessionId ? <Link key={item.id} to="/app/chat/$chatId" params={{ chatId: item.sessionId }} className="flex items-center gap-4 rounded-lg px-3 py-4 transition-colors hover:bg-accent">{content}</Link> : <div key={item.id} className="flex items-center gap-4 px-3 py-4">{content}</div>;
+                })}</div>
+              </section>;
+            })}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

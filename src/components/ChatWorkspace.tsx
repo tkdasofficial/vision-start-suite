@@ -3,7 +3,7 @@ import { Menu } from "lucide-react";
 import AnnouncementBanner from "./AnnouncementBanner";
 
 import type { AITool, ChatMessage as ChatMessageType } from "@/lib/types";
-import ProfileMenu from "./ProfileMenu";
+import { Button } from "@/components/ui/button";
 import { useChatHistory } from "@/context/ChatHistoryContext";
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
@@ -777,20 +777,19 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
 
   return (
     <div className="flex flex-col h-full flex-1 min-w-0">
-      <header className="flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-2 border-b border-border bg-background/80 backdrop-blur-sm">
-        <button
+      <header className="relative flex shrink-0 items-center gap-3 bg-transparent px-3 py-1.5 sm:px-4 sm:py-2">
+        <Button variant="secondary" size="icon" aria-label="Open sidebar" title="Open sidebar"
           onClick={onMenuClick}
-          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors lg:hidden"
+          className="rounded-full text-foreground lg:hidden"
         >
           <Menu className="w-5 h-5" />
-        </button>
+        </Button>
         <div className="flex items-center gap-2 min-w-0 max-w-[60%]">
           {tool && <tool.icon className="w-4 h-4 text-foreground shrink-0" />}
           <h2 className="text-sm font-display font-semibold text-foreground truncate" title={chatTitle || defaultTitle}>
             {displayTitle}
           </h2>
         </div>
-        <ProfileMenu />
       </header>
 
       <AnnouncementBanner />

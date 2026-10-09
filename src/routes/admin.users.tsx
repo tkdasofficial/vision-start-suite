@@ -8,6 +8,8 @@ export const Route = createFileRoute("/admin/users")({
       { name: "description", content: "Admin · Users in Super Copilot, your all-in-one AI workspace." },
       { property: "og:title", content: "Admin · Users — Super Copilot" },
       { property: "og:description", content: "Admin · Users in Super Copilot, your all-in-one AI workspace." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: RouteComponent,

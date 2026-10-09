@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
-import { X, PenSquare, MessageSquare, Pencil, Trash2, Check, Image, Video, FileText, Music, Sparkles, Plug } from "lucide-react";
+import { X, Search, Pencil, Trash2, Check, Plug } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
 import { useState } from "react";
 import { useChatHistory } from "@/context/ChatHistoryContext";
 import logo from "@/assets/logo.svg";
+import { Button } from "@/components/ui/button";
+import SidebarActions from "@/components/SidebarActions";
 
 type Props = {
   open: boolean;
@@ -38,8 +40,10 @@ const MobileSidebar = ({ open, onClose, onNewChat, onSelectChat, isMainChat, act
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 animate-fade-in" onClick={onClose} />
       )}
       <div
+        role="dialog" aria-label="Sidebar" aria-modal={open || undefined} inert={!open}
+        onKeyDown={(event) => { if (event.key === "Escape") onClose(); }}
         className={cn(
-          "fixed top-0 left-0 bottom-0 w-[280px] bg-sidebar border-r border-sidebar-border z-50 flex flex-col transition-transform duration-300 ease-in-out",
+          "fixed top-0 left-0 bottom-0 w-[280px] max-w-[calc(100vw-3rem)] bg-sidebar border-r border-sidebar-border z-50 flex flex-col transition-transform duration-300 ease-in-out motion-reduce:transition-none",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -48,43 +52,9 @@ const MobileSidebar = ({ open, onClose, onNewChat, onSelectChat, isMainChat, act
             <img src={logo} alt="Super Copilot" className="w-8 h-8 rounded-full object-cover" />
             <span className="font-display font-semibold text-foreground text-sm">Super Copilot</span>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="px-3 pb-2 space-y-1.5">
-          <button
-            onClick={() => { onNewChat(); onClose(); }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-          >
-            <PenSquare className="w-4 h-4" />
-            <span>New chat</span>
-          </button>
-        </div>
-
-        {/* Media quick-launch */}
-        <div className="px-3 pt-2">
-          <p className="px-3 pb-1.5 text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Media</p>
-          <div className="flex items-center gap-1.5 px-1">
-            {[
-              { icon: Image, label: "Image", prompt: "Generate an image of " },
-              { icon: Video, label: "Video", prompt: "Create a video about " },
-              { icon: FileText, label: "File", prompt: "Create a file: " },
-              { icon: Music, label: "Audio", prompt: "Generate audio for " },
-              { icon: Sparkles, label: "Other", prompt: "" },
-            ].map(({ icon: Icon, label, prompt }) => (
-              <button
-                key={label}
-                onClick={() => { onNewChat(); onClose(); if (prompt) sessionStorage.setItem("prefill_prompt", prompt); }}
-                title={label}
-                className="group flex-1 aspect-square flex flex-col items-center justify-center gap-0.5 rounded-lg border border-sidebar-border bg-sidebar-accent/30 hover:bg-sidebar-accent hover:border-primary/40 transition-colors"
-              >
-                <Icon className="w-3.5 h-3.5 text-sidebar-foreground group-hover:text-primary" />
-                <span className="text-[9px] text-muted-foreground group-hover:text-foreground">{label}</span>
-              </button>
-            ))}
-          </div>
+          <Button variant="secondary" size="icon" className="shrink-0 rounded-full" aria-label="Open search" title="Search" onClick={() => { navigate("/app/search"); onClose(); }}>
+            <Search />
+          </Button>
         </div>
 
         {/* Integrations */}
@@ -103,7 +73,7 @@ const MobileSidebar = ({ open, onClose, onNewChat, onSelectChat, isMainChat, act
 
 
         {chatHistory.length > 0 && (
-          <div className="px-3 pt-4 flex-1 overflow-y-auto">
+          <div className="px-3 pt-4 pb-2 min-h-0 flex-1 overflow-y-auto">
             <p className="px-3 pb-1.5 text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Recent</p>
             <nav className="space-y-0.5">
               {chatHistory.map((chat) => (
@@ -158,6 +128,7 @@ const MobileSidebar = ({ open, onClose, onNewChat, onSelectChat, isMainChat, act
             </nav>
           </div>
         )}
+        <SidebarActions onNewChat={() => { onNewChat(); onClose(); }} />
       </div>
     </>
   );

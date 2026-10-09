@@ -35,6 +35,7 @@ import { Route as AppInboxRouteImport } from './routes/app.inbox'
 import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
 import { Route as AppNewRouteImport } from './routes/app.new'
 import { Route as AppProspectingRouteImport } from './routes/app.prospecting'
+import { Route as AppSearchRouteImport } from './routes/app.search'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSupportRouteImport } from './routes/app.support'
 import { Route as AppUpgradeRouteImport } from './routes/app.upgrade'
@@ -172,6 +173,11 @@ const AppProspectingRoute = AppProspectingRouteImport.update({
   path: '/app/prospecting',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppSearchRoute = AppSearchRouteImport.update({
+  id: '/app/search',
+  path: '/app/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/app/settings',
   path: '/app/settings',
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/new': typeof AppNewRoute
   '/app/prospecting': typeof AppProspectingRoute
+  '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/new': typeof AppNewRoute
   '/app/prospecting': typeof AppProspectingRoute
+  '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
@@ -297,6 +305,7 @@ export interface FileRoutesById {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/new': typeof AppNewRoute
   '/app/prospecting': typeof AppProspectingRoute
+  '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/new'
     | '/app/prospecting'
+    | '/app/search'
     | '/app/settings'
     | '/app/support'
     | '/app/upgrade'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/new'
     | '/app/prospecting'
+    | '/app/search'
     | '/app/settings'
     | '/app/support'
     | '/app/upgrade'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/new'
     | '/app/prospecting'
+    | '/app/search'
     | '/app/settings'
     | '/app/support'
     | '/app/upgrade'
@@ -422,6 +434,7 @@ export interface RootRouteChildren {
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppNewRoute: typeof AppNewRoute
   AppProspectingRoute: typeof AppProspectingRoute
+  AppSearchRoute: typeof AppSearchRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSupportRoute: typeof AppSupportRoute
   AppUpgradeRoute: typeof AppUpgradeRoute
@@ -614,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProspectingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/search': {
+      id: '/app/search'
+      path: '/app/search'
+      fullPath: '/app/search'
+      preLoaderRoute: typeof AppSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/settings': {
       id: '/app/settings'
       path: '/app/settings'
@@ -708,6 +728,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppNewRoute: AppNewRoute,
   AppProspectingRoute: AppProspectingRoute,
+  AppSearchRoute: AppSearchRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSupportRoute: AppSupportRoute,
   AppUpgradeRoute: AppUpgradeRoute,

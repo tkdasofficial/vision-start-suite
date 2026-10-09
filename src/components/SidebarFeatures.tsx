@@ -1,5 +1,6 @@
 import { Image, Film, Library, FolderOpen, Plug } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const features = [
@@ -12,9 +13,29 @@ const features = [
 
 export default function SidebarFeatures({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  return <nav aria-label="Workspace features" className="space-y-1 px-3 pt-3">
-    {features.map(({ label, to, icon: Icon }) => <Button key={to} asChild variant="ghost" className={`h-11 w-full justify-start gap-3 rounded-lg px-3 ${pathname === to ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
-      <Link to={to} onClick={onNavigate} aria-current={pathname === to ? "page" : undefined}><Icon className="size-4" /><span>{label}</span></Link>
-    </Button>)}
-  </nav>;
+  return (
+    <nav aria-label="Workspace features" className="space-y-0.5 px-3 pt-1.5">
+      {features.map(({ label, to, icon: Icon }) => {
+        const active = pathname === to;
+        return (
+          <Button
+            key={to}
+            asChild
+            variant="ghost"
+            className={cn(
+              "h-10 w-full justify-start gap-3 rounded-xl px-3 text-sm font-medium transition-colors",
+              active
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/60"
+            )}
+          >
+            <Link to={to} onClick={onNavigate} aria-current={active ? "page" : undefined}>
+              <Icon className={cn("size-4 shrink-0", active ? "text-foreground" : "text-muted-foreground")} />
+              <span className="truncate">{label}</span>
+            </Link>
+          </Button>
+        );
+      })}
+    </nav>
+  );
 }

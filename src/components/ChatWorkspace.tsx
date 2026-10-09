@@ -217,10 +217,12 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
     setIsTyping(true);
 
     // Save first message as chat history entry
+    let sessionId = chatId;
     if (!chatId) {
       const rawTitle = content.length > 100 ? content.slice(0, 100) : content;
       const title = rawTitle.length > 40 ? rawTitle.slice(0, 40) + "..." : rawTitle;
       const newId = addChat(title, content, tool?.id);
+      sessionId = newId;
       setChatId(newId);
       setChatTitle(title);
       onChatCreated?.(newId);
@@ -698,6 +700,8 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
         : [...prev, { id: replyId, role: "assistant", content: finalText || "I couldn't come up with an answer. Please try again.", timestamp: new Date(), toolId: tool?.id }]);
       clearTimeout(phaseTimer);
       setIsTyping(false);
+      // Save the reply even if this screen was replaced while it streamed.
+      if (sessionId) updateChatMessages(sessionId, [...messages, userMsg, { id: replyId, role: "assistant", content: finalText || "I couldn't come up with an answer. Please try again.", timestamp: new Date(), toolId: tool?.id }]);
     } catch (e: any) {
       setMessages((prev) => [...prev, {
         id: (Date.now() + 1).toString(),

@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/chat")({
         const upstream = await fetch(`https://api.cloudflare.com/client/v4/accounts/${account}/ai/v1/chat/completions`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ model, messages: [{ role: "system", content: SYSTEM }, ...messages], stream: true, max_tokens: 4096 }),
+          body: JSON.stringify({ model, messages: [{ role: "system", content: model === MODELS.general ? `${SYSTEM} /no_think` : SYSTEM }, ...messages], stream: true, max_tokens: 4096 }),
           signal: request.signal,
         });
         if (!upstream.ok || !upstream.body) {

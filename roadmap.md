@@ -1,5 +1,5 @@
 # Sidebar and Search refinement
-- [ ] Simplify sidebar branding, empty suggestions, and main header controls.
-- [ ] Add memory-only Incognito Chat without saving private activity.
-- [ ] Align Search back button and search bar with scrolling pill filters.
-- [ ] Verify UI and privacy behavior.
+- [x] Simplify sidebar branding, empty suggestions, and main header controls.
+- [x] Add memory-only Incognito Chat without saving private activity.
+- [x] Align Search back button and search bar with scrolling pill filters.
+- [x] Verify UI and privacy behavior.

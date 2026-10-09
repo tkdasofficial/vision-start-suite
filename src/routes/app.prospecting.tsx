@@ -5,10 +5,10 @@ import { Protected } from "@/components/Protected";
 export const Route = createFileRoute("/app/prospecting")({
   head: () => ({
     meta: [
-      { title: "Prospecting — Super Copilot" },
-      { name: "description", content: "Prospecting in Super Copilot, your all-in-one AI workspace." },
-      { property: "og:title", content: "Prospecting — Super Copilot" },
-      { property: "og:description", content: "Prospecting in Super Copilot, your all-in-one AI workspace." },
+      { title: "Prospecting — Vision" },
+      { name: "description", content: "Prospecting in Vision, your all-in-one AI workspace." },
+      { property: "og:title", content: "Prospecting — Vision" },
+      { property: "og:description", content: "Prospecting in Vision, your all-in-one AI workspace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

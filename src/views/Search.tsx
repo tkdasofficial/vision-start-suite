@@ -17,7 +17,7 @@ const categories = [
   { value: "generated", label: "Generated Items", icon: Sparkles },
 ] as const;
 
-export default function Search() {
+export default function Search({ library = false }: { library?: boolean }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { history } = useChatHistory();
@@ -59,7 +59,7 @@ export default function Search() {
     return () => { cancelled = true; };
   }, [user, history]);
 
-  const results = useMemo(() => filterSearchItems(items, query, category), [items, query, category]);
+  const results = useMemo(() => filterSearchItems(library ? items.filter((item) => item.category !== "chats") : items, query, category), [items, query, category, library]);
   const sidebarProps = { onNewChat: () => navigate("/app/new"), onSelectChat: (id: string) => navigate(`/app/chat/${id}`), isMainChat: false, chatHistory: history };
 
   return (
@@ -70,7 +70,7 @@ export default function Search() {
           <Button variant="secondary" size="icon" className="rounded-full" aria-label="Back to chat" title="Back to chat" onClick={() => navigate("/app/new")}><ArrowLeft /></Button>
             <div className="relative min-w-0 flex-1">
               <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search chats, files, and generated items" placeholder="Search anything" className="h-10 rounded-full pl-9 pr-10" />
+              <Input autoFocus={!library} value={query} onChange={(event) => setQuery(event.target.value)} aria-label={library ? "Search library" : "Search chats, files, and generated items"} placeholder={library ? "Search library" : "Search anything"} className="h-10 rounded-full pl-9 pr-10" />
               {query && <Button variant="ghost" size="icon" aria-label="Clear search" title="Clear search" className="absolute right-1 top-1 size-8 rounded-full" onClick={() => setQuery("")}><X /></Button>}
             </div>
         </header>
@@ -78,7 +78,7 @@ export default function Search() {
             <Tabs value={category} onValueChange={(value) => setCategory(value as SearchCategory | "all")}>
               <TabsList aria-label="Search categories" className="flex h-auto w-max flex-nowrap justify-start gap-2 bg-transparent p-0">
                 <TabsTrigger className="h-9 flex-none rounded-full border border-border px-4 data-[state=active]:bg-foreground data-[state=active]:text-background" value="all">All</TabsTrigger>
-                {categories.map((entry) => <TabsTrigger className="h-9 flex-none rounded-full border border-border px-4 data-[state=active]:bg-foreground data-[state=active]:text-background" key={entry.value} value={entry.value}>{entry.label}</TabsTrigger>)}
+                {categories.filter((entry) => !library || entry.value !== "chats").map((entry) => <TabsTrigger className="h-9 flex-none rounded-full border border-border px-4 data-[state=active]:bg-foreground data-[state=active]:text-background" key={entry.value} value={entry.value}>{entry.label}</TabsTrigger>)}
               </TabsList>
             </Tabs>
         </div>

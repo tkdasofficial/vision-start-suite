@@ -9,6 +9,8 @@ import { useChatHistory } from "@/context/ChatHistoryContext";
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
 import EmptyState from "./EmptyState";
+import CreationEmptyState from "./CreationEmptyState";
+import type { CreationMode } from "@/lib/creation-references";
 import TypingIndicator, { detectPhase, type ThinkingPhase } from "./TypingIndicator";
 import { detectAspectRatio } from "@/lib/detect-aspect-ratio";
 import { getCategory } from "@/lib/file-converter";
@@ -20,6 +22,7 @@ import { useAuth } from "@/context/AuthContext";
 
 type Props = {
   tool?: AITool;
+  creationMode?: CreationMode;
   onMenuClick: () => void;
   initialMessages?: ChatMessageType[];
   chatId?: string;
@@ -33,10 +36,11 @@ const CODE_GEN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/code-gen
 const FILE_CREATOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/file-creator`;
 const AGENT_PLANNER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-planner`;
 
-const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalChatId, onChatCreated, isIncognito = false, onIncognitoChat }: Props) => {
+const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalChatId, onChatCreated, isIncognito = false, onIncognitoChat, creationMode }: Props) => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessageType[]>(initialMessages || []);
   const [isTyping, setIsTyping] = useState(false);
+  const [creationError, setCreationError] = useState<string | null>(null);
   const initialMsgCount = useRef((initialMessages || []).length);
   const [thinkingPhase, setThinkingPhase] = useState<ThinkingPhase>("thinking");
   const [chatId, setChatId] = useState<string | null>(externalChatId || null);
@@ -178,6 +182,10 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
   }, [chatId, user, isIncognito]);
 
   const handleSend = useCallback(async (content: string, imageData?: { base64: string; mimeType: string }, taskMode?: TaskMode) => {
+    if (creationMode) {
+      setCreationError(LOCAL_AI_UNAVAILABLE);
+      return;
+    }
     const userMsg: ChatMessageType = {
       id: Date.now().toString(),
       role: "user",
@@ -705,7 +713,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
       clearTimeout(phaseTimer);
       setIsTyping(false);
     }
-  }, [tool, chatId, addChat, messages, updateChatMessages, dispatchBgTask, isIncognito]);
+  }, [tool, chatId, addChat, messages, updateChatMessages, dispatchBgTask, isIncognito, creationMode]);
 
   const handleZipUpload = useCallback(async (file: File) => {
     const userMsg: ChatMessageType = {
@@ -783,7 +791,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
   }
 
   const hasMessages = messages.length > 0;
-  const defaultTitle = tool ? tool.shortName : "Super Copilot";
+  const defaultTitle = tool ? tool.shortName : "Vision";
   
   // Truncate display title to ~2-3 words with ellipsis
   const displayTitle = chatTitle
@@ -824,11 +832,12 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
             {isTyping && <TypingIndicator phase={thinkingPhase} />}
           </div>
         ) : (
-          <EmptyState tool={tool} onPromptClick={(prompt) => handleSend(prompt)} />
+          creationMode ? <CreationEmptyState mode={creationMode} onPromptClick={(prompt) => handleSend(prompt)} /> : <EmptyState tool={tool} onPromptClick={(prompt) => handleSend(prompt)} />
         )}
       </div>
 
-      <ChatInput toolName={tool?.shortName} onSend={handleSend} onZipUpload={handleZipUpload} onFileConvert={handleFileConvert} disabled={isTyping} />
+      {creationError && <p role="alert" className="mx-auto max-w-2xl px-4 pb-2 text-center text-sm text-destructive">{creationError}</p>}
+      <ChatInput creationMode={creationMode} toolName={tool?.shortName} onSend={handleSend} onZipUpload={creationMode ? undefined : handleZipUpload} onFileConvert={creationMode ? undefined : handleFileConvert} disabled={isTyping} />
     </div>
   );
 };

@@ -5,10 +5,10 @@ import { Protected } from "@/components/Protected";
 export const Route = createFileRoute("/app/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — Super Copilot" },
-      { name: "description", content: "Settings in Super Copilot, your all-in-one AI workspace." },
-      { property: "og:title", content: "Settings — Super Copilot" },
-      { property: "og:description", content: "Settings in Super Copilot, your all-in-one AI workspace." },
+      { title: "Settings — Vision" },
+      { name: "description", content: "Settings in Vision, your all-in-one AI workspace." },
+      { property: "og:title", content: "Settings — Vision" },
+      { property: "og:description", content: "Settings in Vision, your all-in-one AI workspace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

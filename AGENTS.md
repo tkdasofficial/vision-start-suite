@@ -16,3 +16,7 @@
 - Speech text is joined through the browser-safe appendTranscript helper, with regression tests alongside existing tests. Why: preserves typed text and whitespace across recognition updates without coupling transcription to a service.
 - Sidebar bottom actions share `SidebarActions`, and Search uses a protected route wrapping a view with browser-only reads of existing chat and task records. Why: keeps navigation consistent without introducing an online backend.
 - Incognito uses a dedicated route and workspace-only React state, bypassing history writes, background jobs, and persistent AI generators. Why: temporary messages and attachments must never reach browser storage; AI remains unavailable in the browser-only app.
+
+- Specialized Images and Videos routes reuse the Index workspace with a creation mode and reference presets; creation submissions terminate with the explicit unavailable status in browser-only mode. Why: preserves the shared layout without text-answer fallbacks or unsupported online calls.
+- Sidebar feature links share SidebarFeatures, secondary collection pages share WorkspaceShell, and Library reuses Search filtered to assets. Why: keeps navigation and stored-item discovery consistent.
+- Projects use user-scoped workspace_projects through the existing local backend adapter. Why: supports browser-local project creation, rename, deletion and chat linking without an online backend.

@@ -1,10 +1,11 @@
 import { cn } from "@/lib/utils";
-import { Search, Pencil, Trash2, Check, X, Plug, Radar } from "lucide-react";
+import { Search, Pencil, Trash2, Check, X } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
 import { useState } from "react";
 import { useChatHistory } from "@/context/ChatHistoryContext";
 import { Button } from "@/components/ui/button";
 import SidebarActions from "@/components/SidebarActions";
+import SidebarFeatures from "@/components/SidebarFeatures";
 
 type Props = {
   onNewChat: () => void;
@@ -38,33 +39,11 @@ const DesktopSidebar = ({ onNewChat, onSelectChat, isMainChat, activeChatId, cha
   return (
     <aside className="hidden lg:flex flex-col w-[260px] bg-sidebar border-r border-sidebar-border h-full min-h-0 shrink-0">
       <div className="flex shrink-0 items-center gap-2.5 px-4 py-4">
-        <span className="flex-1 font-display font-semibold text-foreground text-sm">Super Copilot</span>
+        <span className="flex-1 font-display font-semibold text-foreground text-sm">Vision</span>
         <Button variant="secondary" size="icon" className="shrink-0 rounded-full" aria-label="Open search" title="Search" onClick={() => navigate("/app/search")}><Search /></Button>
       </div>
 
-      {/* Integrations */}
-      <div className="px-3 pt-3">
-        <button
-          onClick={() => navigate("/app/integrations")}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors border border-transparent hover:border-primary/30 group"
-        >
-          <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-            <Plug className="w-3.5 h-3.5 text-primary" />
-          </div>
-          <span className="flex-1 text-left font-medium">Integrations</span>
-          <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary font-semibold">New</span>
-        </button>
-        <button
-          onClick={() => navigate("/app/prospecting")}
-          className="mt-1 w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors border border-transparent hover:border-primary/30 group"
-        >
-          <div className="w-6 h-6 rounded-md bg-foreground/10 flex items-center justify-center group-hover:bg-foreground/20 transition-colors">
-            <Radar className="w-3.5 h-3.5 text-foreground" />
-          </div>
-          <span className="flex-1 text-left font-medium">Prospecting</span>
-          <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-foreground text-background font-semibold">Agent</span>
-        </button>
-      </div>
+      <SidebarFeatures />
 
       {displayHistory.length > 0 && (
         <div className="px-3 pt-4 pb-2 min-h-0 flex-1 overflow-y-auto">

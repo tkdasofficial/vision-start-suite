@@ -1,18 +1,17 @@
 import { useNavigate } from "@/lib/router-compat";
 import { ArrowLeft } from "lucide-react";
-import ProfileMenu from "@/components/ProfileMenu";
 
 const Terms = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/80 backdrop-blur-sm">
+      <header className="flex items-center justify-between px-4 py-3 bg-transparent">
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-sm font-display font-semibold text-foreground">Terms & Conditions</h1>
-        <ProfileMenu />
+        <span className="w-9" aria-hidden="true" />
       </header>
 
       <div className="flex-1 px-4 py-6 sm:px-6 overflow-y-auto">

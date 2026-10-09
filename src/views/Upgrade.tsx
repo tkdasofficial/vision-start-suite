@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { ArrowLeft, Check, Sparkles, Loader2 } from "lucide-react";
-import ProfileMenu from "@/components/ProfileMenu";
 import { supabase } from "@/backend/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -67,13 +66,12 @@ const Upgrade = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background">
-      <div className="px-4 py-3 sticky top-0 bg-background/85 backdrop-blur-md z-20 border-b border-border/60">
+      <div className="px-4 py-3 sticky top-0 bg-transparent z-20">
         <div className="max-w-7xl mx-auto flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             <ArrowLeft className="w-4.5 h-4.5" strokeWidth={2} />
           </button>
           <h1 className="text-base font-display font-semibold text-foreground">Plans & Pricing</h1>
-          <div className="ml-auto"><ProfileMenu /></div>
         </div>
       </div>
 

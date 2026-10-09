@@ -44,7 +44,7 @@ export default function Search() {
         const merged = new Map((messages.data || []).map((message: Record<string, any>) => [message.id, message]));
         // Cached messages retain file details that older saved rows may not contain.
         for (const session of sessions.data || []) {
-          let cached = [];
+          let cached: Record<string, any>[] = [];
           try { cached = JSON.parse(localStorage.getItem(`sc_chat_msgs_${session.id}`) || "[]"); } catch { /* Ignore malformed cache. */ }
           if (!Array.isArray(cached)) continue;
           for (const message of cached) {

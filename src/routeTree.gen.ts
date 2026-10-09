@@ -31,15 +31,19 @@ import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminSystemRouteImport } from './routes/admin.system'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AppAccountRouteImport } from './routes/app.account'
+import { Route as AppImagesRouteImport } from './routes/app.images'
 import { Route as AppInboxRouteImport } from './routes/app.inbox'
 import { Route as AppIncognitoRouteImport } from './routes/app.incognito'
 import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
+import { Route as AppLibraryRouteImport } from './routes/app.library'
 import { Route as AppNewRouteImport } from './routes/app.new'
+import { Route as AppProjectsRouteImport } from './routes/app.projects'
 import { Route as AppProspectingRouteImport } from './routes/app.prospecting'
 import { Route as AppSearchRouteImport } from './routes/app.search'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSupportRouteImport } from './routes/app.support'
 import { Route as AppUpgradeRouteImport } from './routes/app.upgrade'
+import { Route as AppVideosRouteImport } from './routes/app.videos'
 import { Route as DocsPrivacyPolicyRouteImport } from './routes/docs.privacy-policy'
 import { Route as DocsTermsConditionsRouteImport } from './routes/docs.terms-conditions'
 import { Route as AppChatChatIdRouteImport } from './routes/app.chat.$chatId'
@@ -154,6 +158,11 @@ const AppAccountRoute = AppAccountRouteImport.update({
   path: '/app/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppImagesRoute = AppImagesRouteImport.update({
+  id: '/app/images',
+  path: '/app/images',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppInboxRoute = AppInboxRouteImport.update({
   id: '/app/inbox',
   path: '/app/inbox',
@@ -169,9 +178,19 @@ const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
   path: '/app/integrations',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppLibraryRoute = AppLibraryRouteImport.update({
+  id: '/app/library',
+  path: '/app/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppNewRoute = AppNewRouteImport.update({
   id: '/app/new',
   path: '/app/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppProjectsRoute = AppProjectsRouteImport.update({
+  id: '/app/projects',
+  path: '/app/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppProspectingRoute = AppProspectingRouteImport.update({
@@ -197,6 +216,11 @@ const AppSupportRoute = AppSupportRouteImport.update({
 const AppUpgradeRoute = AppUpgradeRouteImport.update({
   id: '/app/upgrade',
   path: '/app/upgrade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppVideosRoute = AppVideosRouteImport.update({
+  id: '/app/videos',
+  path: '/app/videos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsPrivacyPolicyRoute = DocsPrivacyPolicyRouteImport.update({
@@ -237,15 +261,19 @@ export interface FileRoutesByFullPath {
   '/admin/system': typeof AdminSystemRoute
   '/admin/users': typeof AdminUsersRoute
   '/app/account': typeof AppAccountRoute
+  '/app/images': typeof AppImagesRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/incognito': typeof AppIncognitoRoute
   '/app/integrations': typeof AppIntegrationsRoute
+  '/app/library': typeof AppLibraryRoute
   '/app/new': typeof AppNewRoute
+  '/app/projects': typeof AppProjectsRoute
   '/app/prospecting': typeof AppProspectingRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
+  '/app/videos': typeof AppVideosRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
   '/admin/': typeof AdminIndexRoute
@@ -272,15 +300,19 @@ export interface FileRoutesByTo {
   '/admin/system': typeof AdminSystemRoute
   '/admin/users': typeof AdminUsersRoute
   '/app/account': typeof AppAccountRoute
+  '/app/images': typeof AppImagesRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/incognito': typeof AppIncognitoRoute
   '/app/integrations': typeof AppIntegrationsRoute
+  '/app/library': typeof AppLibraryRoute
   '/app/new': typeof AppNewRoute
+  '/app/projects': typeof AppProjectsRoute
   '/app/prospecting': typeof AppProspectingRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
+  '/app/videos': typeof AppVideosRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
   '/admin': typeof AdminIndexRoute
@@ -309,15 +341,19 @@ export interface FileRoutesById {
   '/admin/system': typeof AdminSystemRoute
   '/admin/users': typeof AdminUsersRoute
   '/app/account': typeof AppAccountRoute
+  '/app/images': typeof AppImagesRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/incognito': typeof AppIncognitoRoute
   '/app/integrations': typeof AppIntegrationsRoute
+  '/app/library': typeof AppLibraryRoute
   '/app/new': typeof AppNewRoute
+  '/app/projects': typeof AppProjectsRoute
   '/app/prospecting': typeof AppProspectingRoute
   '/app/search': typeof AppSearchRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
+  '/app/videos': typeof AppVideosRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
   '/admin/': typeof AdminIndexRoute
@@ -347,15 +383,19 @@ export interface FileRouteTypes {
     | '/admin/system'
     | '/admin/users'
     | '/app/account'
+    | '/app/images'
     | '/app/inbox'
     | '/app/incognito'
     | '/app/integrations'
+    | '/app/library'
     | '/app/new'
+    | '/app/projects'
     | '/app/prospecting'
     | '/app/search'
     | '/app/settings'
     | '/app/support'
     | '/app/upgrade'
+    | '/app/videos'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
     | '/admin/'
@@ -382,15 +422,19 @@ export interface FileRouteTypes {
     | '/admin/system'
     | '/admin/users'
     | '/app/account'
+    | '/app/images'
     | '/app/inbox'
     | '/app/incognito'
     | '/app/integrations'
+    | '/app/library'
     | '/app/new'
+    | '/app/projects'
     | '/app/prospecting'
     | '/app/search'
     | '/app/settings'
     | '/app/support'
     | '/app/upgrade'
+    | '/app/videos'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
     | '/admin'
@@ -418,15 +462,19 @@ export interface FileRouteTypes {
     | '/admin/system'
     | '/admin/users'
     | '/app/account'
+    | '/app/images'
     | '/app/inbox'
     | '/app/incognito'
     | '/app/integrations'
+    | '/app/library'
     | '/app/new'
+    | '/app/projects'
     | '/app/prospecting'
     | '/app/search'
     | '/app/settings'
     | '/app/support'
     | '/app/upgrade'
+    | '/app/videos'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
     | '/admin/'
@@ -442,15 +490,19 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   AppAccountRoute: typeof AppAccountRoute
+  AppImagesRoute: typeof AppImagesRoute
   AppInboxRoute: typeof AppInboxRoute
   AppIncognitoRoute: typeof AppIncognitoRoute
   AppIntegrationsRoute: typeof AppIntegrationsRoute
+  AppLibraryRoute: typeof AppLibraryRoute
   AppNewRoute: typeof AppNewRoute
+  AppProjectsRoute: typeof AppProjectsRoute
   AppProspectingRoute: typeof AppProspectingRoute
   AppSearchRoute: typeof AppSearchRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSupportRoute: typeof AppSupportRoute
   AppUpgradeRoute: typeof AppUpgradeRoute
+  AppVideosRoute: typeof AppVideosRoute
   DocsPrivacyPolicyRoute: typeof DocsPrivacyPolicyRoute
   DocsTermsConditionsRoute: typeof DocsTermsConditionsRoute
   AppChatChatIdRoute: typeof AppChatChatIdRoute
@@ -612,6 +664,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/images': {
+      id: '/app/images'
+      path: '/app/images'
+      fullPath: '/app/images'
+      preLoaderRoute: typeof AppImagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/inbox': {
       id: '/app/inbox'
       path: '/app/inbox'
@@ -633,11 +692,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIntegrationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/library': {
+      id: '/app/library'
+      path: '/app/library'
+      fullPath: '/app/library'
+      preLoaderRoute: typeof AppLibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/new': {
       id: '/app/new'
       path: '/app/new'
       fullPath: '/app/new'
       preLoaderRoute: typeof AppNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/projects': {
+      id: '/app/projects'
+      path: '/app/projects'
+      fullPath: '/app/projects'
+      preLoaderRoute: typeof AppProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/prospecting': {
@@ -673,6 +746,13 @@ declare module '@tanstack/react-router' {
       path: '/app/upgrade'
       fullPath: '/app/upgrade'
       preLoaderRoute: typeof AppUpgradeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/videos': {
+      id: '/app/videos'
+      path: '/app/videos'
+      fullPath: '/app/videos'
+      preLoaderRoute: typeof AppVideosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/privacy-policy': {
@@ -744,15 +824,19 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   AppAccountRoute: AppAccountRoute,
+  AppImagesRoute: AppImagesRoute,
   AppInboxRoute: AppInboxRoute,
   AppIncognitoRoute: AppIncognitoRoute,
   AppIntegrationsRoute: AppIntegrationsRoute,
+  AppLibraryRoute: AppLibraryRoute,
   AppNewRoute: AppNewRoute,
+  AppProjectsRoute: AppProjectsRoute,
   AppProspectingRoute: AppProspectingRoute,
   AppSearchRoute: AppSearchRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSupportRoute: AppSupportRoute,
   AppUpgradeRoute: AppUpgradeRoute,
+  AppVideosRoute: AppVideosRoute,
   DocsPrivacyPolicyRoute: DocsPrivacyPolicyRoute,
   DocsTermsConditionsRoute: DocsTermsConditionsRoute,
   AppChatChatIdRoute: AppChatChatIdRoute,

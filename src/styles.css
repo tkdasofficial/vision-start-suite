@@ -171,6 +171,23 @@
 }
 
 /* Smooth scrollbar */
+.creation-reference-strip {
+  display: flex;
+  gap: 12px;
+  width: min(100%, 420px);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+}
+.creation-reference {
+  flex: 0 0 calc((100% - 24px) / 2.5);
+  height: auto;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 8px;
+  scroll-snap-align: start;
+}
+
 ::-webkit-scrollbar {
   width: 4px;
 }

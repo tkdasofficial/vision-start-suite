@@ -3,7 +3,6 @@ import { Search, Pencil, Trash2, Check, X, Plug, Radar } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
 import { useState } from "react";
 import { useChatHistory } from "@/context/ChatHistoryContext";
-import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
 import SidebarActions from "@/components/SidebarActions";
 
@@ -39,7 +38,6 @@ const DesktopSidebar = ({ onNewChat, onSelectChat, isMainChat, activeChatId, cha
   return (
     <aside className="hidden lg:flex flex-col w-[260px] bg-sidebar border-r border-sidebar-border h-full min-h-0 shrink-0">
       <div className="flex shrink-0 items-center gap-2.5 px-4 py-4">
-        <img src={logo} alt="Super Copilot" className="w-8 h-8 rounded-full object-cover" />
         <span className="flex-1 font-display font-semibold text-foreground text-sm">Super Copilot</span>
         <Button variant="secondary" size="icon" className="shrink-0 rounded-full" aria-label="Open search" title="Search" onClick={() => navigate("/app/search")}><Search /></Button>
       </div>

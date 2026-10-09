@@ -3,7 +3,6 @@ import { X, Search, Pencil, Trash2, Check, Plug } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
 import { useState } from "react";
 import { useChatHistory } from "@/context/ChatHistoryContext";
-import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
 import SidebarActions from "@/components/SidebarActions";
 
@@ -49,7 +48,6 @@ const MobileSidebar = ({ open, onClose, onNewChat, onSelectChat, isMainChat, act
       >
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-2.5">
-            <img src={logo} alt="Super Copilot" className="w-8 h-8 rounded-full object-cover" />
             <span className="font-display font-semibold text-foreground text-sm">Super Copilot</span>
           </div>
           <Button variant="secondary" size="icon" className="shrink-0 rounded-full" aria-label="Open search" title="Search" onClick={() => { navigate("/app/search"); onClose(); }}>

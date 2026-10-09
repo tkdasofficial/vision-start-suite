@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import type { ChatMessage } from "@/lib/types";
 import { supabase } from "@/lib/cloud/client";
 import { useAuth } from "./AuthContext";
@@ -306,14 +306,8 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
       .then(({ error }) => {
         if (error) { console.error("Failed to save messages:", error); pending.forEach((m) => savedRef.current.delete(m.id)); }
       });
+      supabase.from("chat_sessions").update({ updated_at: new Date().toISOString() }).eq("id", id).then(() => {});
     }, 800);
-
-    // Update session's updated_at
-    supabase
-      .from("chat_sessions")
-      .update({ updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .then(() => {});
   }, []);
 
   const getChatById = useCallback((id: string) => {

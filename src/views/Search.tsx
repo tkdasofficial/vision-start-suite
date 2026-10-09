@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowUpRight, FileText, Menu, MessageSquare, Search as SearchIcon, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, FileText, MessageSquare, Search as SearchIcon, Sparkles, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useNavigate } from "@/lib/router-compat";
 import { useAuth } from "@/context/AuthContext";
@@ -7,7 +7,6 @@ import { useChatHistory } from "@/context/ChatHistoryContext";
 import { supabase } from "@/backend/client";
 import { collectSearchItems, filterSearchItems, type SearchCategory, type SearchItem } from "@/lib/workspace-search";
 import DesktopSidebar from "@/components/DesktopSidebar";
-import MobileSidebar from "@/components/MobileSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +21,6 @@ export default function Search() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { history } = useChatHistory();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<SearchCategory | "all">("all");
   const [items, setItems] = useState<SearchItem[]>([]);
@@ -67,26 +65,25 @@ export default function Search() {
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-background">
       <DesktopSidebar {...sidebarProps} />
-      <MobileSidebar {...sidebarProps} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex shrink-0 items-center gap-3 bg-transparent px-4 py-2">
-          <Button variant="secondary" size="icon" className="rounded-full lg:hidden" aria-label="Open sidebar" title="Open sidebar" onClick={() => setSidebarOpen(true)}><Menu /></Button>
+        <header className="flex shrink-0 items-center gap-3 bg-transparent px-4 py-3 sm:px-8">
           <Button variant="secondary" size="icon" className="rounded-full" aria-label="Back to chat" title="Back to chat" onClick={() => navigate("/app/new")}><ArrowLeft /></Button>
-        </header>
-        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-          <div className="mx-auto max-w-3xl">
-            <h1 className="mb-6 font-display text-3xl font-semibold">Search</h1>
-            <div className="relative mb-5">
-              <SearchIcon className="absolute left-4 top-4 h-5 w-5 text-muted-foreground" />
-              <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search chats, files, and generated items" placeholder="Search chats, files, and generated items" className="h-13 rounded-full pl-12 pr-12" />
-              {query && <Button variant="ghost" size="icon" aria-label="Clear search" title="Clear search" className="absolute right-2 top-1.5 rounded-full" onClick={() => setQuery("")}><X /></Button>}
+            <div className="relative min-w-0 flex-1">
+              <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search chats, files, and generated items" placeholder="Search anything" className="h-10 rounded-full pl-9 pr-10" />
+              {query && <Button variant="ghost" size="icon" aria-label="Clear search" title="Clear search" className="absolute right-1 top-1 size-8 rounded-full" onClick={() => setQuery("")}><X /></Button>}
             </div>
+        </header>
+        <div className="shrink-0 overflow-x-auto px-4 pb-3 sm:px-8">
             <Tabs value={category} onValueChange={(value) => setCategory(value as SearchCategory | "all")}>
-              <TabsList className="mb-6 flex h-auto w-full flex-wrap justify-start gap-1 bg-transparent p-0">
-                <TabsTrigger value="all">All</TabsTrigger>
-                {categories.map((entry) => <TabsTrigger key={entry.value} value={entry.value}>{entry.label}</TabsTrigger>)}
+              <TabsList aria-label="Search categories" className="flex h-auto w-max flex-nowrap justify-start gap-2 bg-transparent p-0">
+                <TabsTrigger className="h-9 flex-none rounded-full border border-border px-4 data-[state=active]:bg-foreground data-[state=active]:text-background" value="all">All</TabsTrigger>
+                {categories.map((entry) => <TabsTrigger className="h-9 flex-none rounded-full border border-border px-4 data-[state=active]:bg-foreground data-[state=active]:text-background" key={entry.value} value={entry.value}>{entry.label}</TabsTrigger>)}
               </TabsList>
             </Tabs>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
+          <div className="mx-auto max-w-3xl">
             {loading ? <p role="status" className="py-12 text-center text-muted-foreground">Loading…</p> : error ? <p role="alert" className="py-12 text-center text-destructive">Search couldn’t load. Please try refreshing.</p> : results.length === 0 ? <div className="py-16 text-center text-muted-foreground"><SearchIcon className="mx-auto mb-4 h-8 w-8" /><p>{query ? "No results found" : "No items yet"}</p></div> : categories.filter((entry) => category === "all" || category === entry.value).map((entry) => {
               const group = results.filter((item) => item.category === entry.value);
               if (!group.length) return null;

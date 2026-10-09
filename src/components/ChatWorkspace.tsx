@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Menu } from "lucide-react";
+import { Crown, Menu, VenetianMask } from "lucide-react";
+import { useNavigate } from "@/lib/router-compat";
 import AnnouncementBanner from "./AnnouncementBanner";
 
 import type { AITool, ChatMessage as ChatMessageType } from "@/lib/types";
@@ -14,7 +15,7 @@ import { getCategory } from "@/lib/file-converter";
 import { analyzeZip } from "@/lib/zip-analyzer";
 import type { TaskMode } from "./TaskModeSelector";
 import { useBackgroundTasks, type BackgroundTask } from "@/hooks/useBackgroundTasks";
-import { supabase } from "@/backend/client";
+import { supabase, LOCAL_AI_UNAVAILABLE } from "@/backend/client";
 import { useAuth } from "@/context/AuthContext";
 
 type Props = {
@@ -23,6 +24,8 @@ type Props = {
   initialMessages?: ChatMessageType[];
   chatId?: string;
   onChatCreated?: (id: string) => void;
+  isIncognito?: boolean;
+  onIncognitoChat: () => void;
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
@@ -30,7 +33,8 @@ const CODE_GEN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/code-gen
 const FILE_CREATOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/file-creator`;
 const AGENT_PLANNER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-planner`;
 
-const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalChatId, onChatCreated }: Props) => {
+const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalChatId, onChatCreated, isIncognito = false, onIncognitoChat }: Props) => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessageType[]>(initialMessages || []);
   const [isTyping, setIsTyping] = useState(false);
   const initialMsgCount = useRef((initialMessages || []).length);
@@ -99,13 +103,14 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
 
   // On mount: recover any completed background tasks that have no corresponding message
   useEffect(() => {
+    if (isIncognito) return;
     for (const task of bgTasks) {
       if (task.status === "done" && task.result) {
         const hasBgMsg = messages.some((m) => m.id === `bg-${task.id}`);
         if (!hasBgMsg) handleBgTaskResult(task);
       }
     }
-  }, [bgTasks]);
+  }, [bgTasks, isIncognito]);
 
   // Set title from initial messages when loading an existing chat
   useEffect(() => {
@@ -124,14 +129,14 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
 
   // Persist messages to history whenever they change
   useEffect(() => {
-    if (chatId && messages.length > 0) {
+    if (!isIncognito && chatId && messages.length > 0) {
       updateChatMessages(chatId, messages);
     }
-  }, [messages, chatId, updateChatMessages]);
+  }, [messages, chatId, updateChatMessages, isIncognito]);
 
   // Subscribe to new messages from Supabase Realtime
   useEffect(() => {
-    if (!chatId || !user) return;
+    if (isIncognito || !chatId || !user) return;
 
     const channel = supabase
       .channel(`chat:${chatId}`)
@@ -170,7 +175,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [chatId, user]);
+  }, [chatId, user, isIncognito]);
 
   const handleSend = useCallback(async (content: string, imageData?: { base64: string; mimeType: string }, taskMode?: TaskMode) => {
     const userMsg: ChatMessageType = {
@@ -182,6 +187,16 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
       imageUrl: imageData ? `data:${imageData.mimeType};base64,${imageData.base64}` : undefined,
     };
     setMessages((prev) => [...prev, userMsg]);
+
+    // Browser-only private chats never create saved rows, background jobs, or
+    // embedded generators that could persist a project independently.
+    if (isIncognito) {
+      setMessages((prev) => [...prev, {
+        id: crypto.randomUUID(), role: "assistant", content: LOCAL_AI_UNAVAILABLE,
+        timestamp: new Date(),
+      }]);
+      return;
+    }
 
     // Detect phase from content
     const phase = detectPhase(content, tool?.id);
@@ -690,7 +705,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
       clearTimeout(phaseTimer);
       setIsTyping(false);
     }
-  }, [tool, chatId, addChat, messages, updateChatMessages, dispatchBgTask]);
+  }, [tool, chatId, addChat, messages, updateChatMessages, dispatchBgTask, isIncognito]);
 
   const handleZipUpload = useCallback(async (file: File) => {
     const userMsg: ChatMessageType = {
@@ -703,7 +718,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
     setIsTyping(true);
     setThinkingPhase("thinking");
 
-    if (!chatId) {
+    if (!isIncognito && !chatId) {
       const title = `ZIP: ${file.name}`;
       const newId = addChat(title, `Uploaded ${file.name}`, tool?.id);
       setChatId(newId);
@@ -729,7 +744,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
       }]);
     }
     setIsTyping(false);
-  }, [chatId, addChat, tool]);
+  }, [chatId, addChat, tool, isIncognito]);
 
   const handleFileConvert = useCallback((file: File) => {
     const cat = getCategory(file);
@@ -743,7 +758,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
     };
     setMessages((prev) => [...prev, userMsg]);
 
-    if (!chatId) {
+    if (!isIncognito && !chatId) {
       const title = `Convert: ${file.name}`;
       const newId = addChat(title, `Convert ${file.name}`, tool?.id);
       setChatId(newId);
@@ -758,7 +773,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
       timestamp: new Date(),
       convertFile: file,
     }]);
-  }, [chatId, addChat, tool]);
+  }, [chatId, addChat, tool, isIncognito]);
 
   function formatBytes(bytes: number): string {
     if (bytes === 0) return "0 B";
@@ -784,15 +799,16 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
         >
           <Menu className="w-5 h-5" />
         </Button>
-        <div className="flex items-center gap-2 min-w-0 max-w-[60%]">
-          {tool && <tool.icon className="w-4 h-4 text-foreground shrink-0" />}
-          <h2 className="text-sm font-display font-semibold text-foreground truncate" title={chatTitle || defaultTitle}>
-            {displayTitle}
-          </h2>
-        </div>
+        <Button variant="secondary" className="rounded-full px-3" aria-label="Upgrade Plan" title="Upgrade Plan" onClick={() => navigate("/app/upgrade")}>
+          <Crown /><span>Upgrade Plan</span>
+        </Button>
+        <Button variant={isIncognito ? "default" : "secondary"} size="icon" className="ml-auto shrink-0 rounded-full" aria-label={isIncognito ? "Start new incognito chat" : "Incognito Chat"} title={isIncognito ? "Start new incognito chat" : "Incognito Chat"} aria-pressed={isIncognito} onClick={onIncognitoChat}>
+          <VenetianMask />
+        </Button>
       </header>
 
       <AnnouncementBanner />
+      {isIncognito && <p className="px-4 py-2 text-center text-xs font-medium text-muted-foreground">Incognito Chat</p>}
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
 

@@ -18,7 +18,7 @@ const EmptyState = ({ tool, onPromptClick }: Props) => {
   const prompts = tool ? tool.samplePrompts.slice(0, 3) : suggestions;
   return (
     <div className="flex min-h-full flex-col items-center justify-center px-5 py-6 animate-fade-up">
-      <img src={logo} alt="Super Copilot" className="mb-5 size-16 shrink-0 rounded-full object-cover sm:size-20" />
+      <img src={logo} alt="Vision" className="mb-5 size-16 shrink-0 rounded-full object-cover sm:size-20" />
       <h2 className="mb-6 text-center font-display text-lg font-semibold text-foreground sm:text-xl">
         {tool?.emptyStateTitle || "What can I help you with?"}
       </h2>

@@ -47,7 +47,7 @@ const Support = () => {
               {[
                 { icon: HelpCircle, label: "FAQ", desc: "Common questions answered", link: "#" },
                 { icon: MessageSquare, label: "Community", desc: "Join our Discord", link: "#" },
-                { icon: Mail, label: "Email Us", desc: "support@supercopilot.ai", link: "#" },
+                { icon: Mail, label: "Email Us", desc: "support@vision.ai", link: "#" },
                 { icon: ExternalLink, label: "Documentation", desc: "Guides & tutorials", link: "#" },
               ].map((item, i) => (
                 <button key={i} className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card hover:bg-accent transition-colors text-left">

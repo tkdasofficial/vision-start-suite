@@ -48,7 +48,7 @@ const MobileSidebar = ({ open, onClose, onNewChat, onSelectChat, isMainChat, act
       >
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-2.5">
-            <span className="font-display font-semibold text-foreground text-sm">Super Copilot</span>
+            <span className="font-display font-semibold text-foreground text-sm">Vision</span>
           </div>
           <Button variant="secondary" size="icon" className="shrink-0 rounded-full" aria-label="Open search" title="Search" onClick={() => { navigate("/app/search"); onClose(); }}>
             <Search />

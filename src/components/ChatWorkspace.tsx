@@ -783,7 +783,7 @@ const ChatWorkspace = ({ tool, onMenuClick, initialMessages, chatId: externalCha
   }
 
   const hasMessages = messages.length > 0;
-  const defaultTitle = tool ? tool.shortName : "Super Copilot";
+  const defaultTitle = tool ? tool.shortName : "Vision";
   
   // Truncate display title to ~2-3 words with ellipsis
   const displayTitle = chatTitle

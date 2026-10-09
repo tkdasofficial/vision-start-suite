@@ -42,7 +42,7 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast({ title: "Account created", description: "Welcome to Super Copilot!" });
+        toast({ title: "Account created", description: "Welcome to Vision!" });
         navigate("/app/new");
       } else {
         // Login flow
@@ -206,7 +206,7 @@ const Auth = () => {
     <div className="min-h-[100dvh] bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-3">
-          <img src={logo} alt="Super Copilot" className="w-14 h-14 rounded-full" />
+          <img src={logo} alt="Vision" className="w-14 h-14 rounded-full" />
           <h1 className="font-display text-xl font-semibold text-foreground">
             {mode === "login" ? "Welcome back" : mode === "signup" ? "Create account" : "Reset password"}
           </h1>
@@ -214,8 +214,8 @@ const Auth = () => {
             {mode === "forgot"
               ? "Enter your email and we'll send a reset link"
               : mode === "signup"
-              ? "Sign up to start using Super Copilot"
-              : "Sign in to your Super Copilot account"}
+              ? "Sign up to start using Vision"
+              : "Sign in to your Vision account"}
           </p>
         </div>
 

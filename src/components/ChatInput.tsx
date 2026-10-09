@@ -278,7 +278,7 @@ const ChatInput = ({ toolName, onSend, onZipUpload, onFileConvert, disabled }: P
         </PromptInput>
 
         <p className="text-[11px] text-muted-foreground text-center mt-2 hidden sm:block">
-          Super Copilot may produce inaccurate results. Verify important information.
+          Vision may produce inaccurate results. Verify important information.
         </p>
       </div>
     </div>

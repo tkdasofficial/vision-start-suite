@@ -30,6 +30,7 @@ import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscript
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminSystemRouteImport } from './routes/admin.system'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppAccountRouteImport } from './routes/app.account'
 import { Route as AppImagesRouteImport } from './routes/app.images'
 import { Route as AppInboxRouteImport } from './routes/app.inbox'
@@ -47,6 +48,9 @@ import { Route as AppUpgradeRouteImport } from './routes/app.upgrade'
 import { Route as AppVideosRouteImport } from './routes/app.videos'
 import { Route as DocsPrivacyPolicyRouteImport } from './routes/docs.privacy-policy'
 import { Route as DocsTermsConditionsRouteImport } from './routes/docs.terms-conditions'
+import { Route as GithubCallbackRouteImport } from './routes/github.callback'
+import { Route as GoogleCallbackRouteImport } from './routes/google.callback'
+import { Route as ApiAuthProviderRouteImport } from './routes/api/auth.$provider'
 import { Route as AppChatChatIdRouteImport } from './routes/app.chat.$chatId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -154,6 +158,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppAccountRoute = AppAccountRouteImport.update({
   id: '/app/account',
   path: '/app/account',
@@ -239,6 +248,21 @@ const DocsTermsConditionsRoute = DocsTermsConditionsRouteImport.update({
   path: '/docs/terms-conditions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GithubCallbackRoute = GithubCallbackRouteImport.update({
+  id: '/github/callback',
+  path: '/github/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoogleCallbackRoute = GoogleCallbackRouteImport.update({
+  id: '/google/callback',
+  path: '/google/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthProviderRoute = ApiAuthProviderRouteImport.update({
+  id: '/api/auth/$provider',
+  path: '/api/auth/$provider',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppChatChatIdRoute = AppChatChatIdRouteImport.update({
   id: '/app/chat/$chatId',
   path: '/app/chat/$chatId',
@@ -266,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/admin/support': typeof AdminSupportRoute
   '/admin/system': typeof AdminSystemRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/chat': typeof ApiChatRoute
   '/app/account': typeof AppAccountRoute
   '/app/images': typeof AppImagesRoute
   '/app/inbox': typeof AppInboxRoute
@@ -283,7 +308,10 @@ export interface FileRoutesByFullPath {
   '/app/videos': typeof AppVideosRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
+  '/github/callback': typeof GithubCallbackRoute
+  '/google/callback': typeof GoogleCallbackRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/auth/$provider': typeof ApiAuthProviderRoute
   '/app/chat/$chatId': typeof AppChatChatIdRoute
 }
 export interface FileRoutesByTo {
@@ -306,6 +334,7 @@ export interface FileRoutesByTo {
   '/admin/support': typeof AdminSupportRoute
   '/admin/system': typeof AdminSystemRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/chat': typeof ApiChatRoute
   '/app/account': typeof AppAccountRoute
   '/app/images': typeof AppImagesRoute
   '/app/inbox': typeof AppInboxRoute
@@ -323,7 +352,10 @@ export interface FileRoutesByTo {
   '/app/videos': typeof AppVideosRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
+  '/github/callback': typeof GithubCallbackRoute
+  '/google/callback': typeof GoogleCallbackRoute
   '/admin': typeof AdminIndexRoute
+  '/api/auth/$provider': typeof ApiAuthProviderRoute
   '/app/chat/$chatId': typeof AppChatChatIdRoute
 }
 export interface FileRoutesById {
@@ -348,6 +380,7 @@ export interface FileRoutesById {
   '/admin/support': typeof AdminSupportRoute
   '/admin/system': typeof AdminSystemRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/chat': typeof ApiChatRoute
   '/app/account': typeof AppAccountRoute
   '/app/images': typeof AppImagesRoute
   '/app/inbox': typeof AppInboxRoute
@@ -365,7 +398,10 @@ export interface FileRoutesById {
   '/app/videos': typeof AppVideosRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
+  '/github/callback': typeof GithubCallbackRoute
+  '/google/callback': typeof GoogleCallbackRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/auth/$provider': typeof ApiAuthProviderRoute
   '/app/chat/$chatId': typeof AppChatChatIdRoute
 }
 export interface FileRouteTypes {
@@ -391,6 +427,7 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/system'
     | '/admin/users'
+    | '/api/chat'
     | '/app/account'
     | '/app/images'
     | '/app/inbox'
@@ -408,7 +445,10 @@ export interface FileRouteTypes {
     | '/app/videos'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
+    | '/github/callback'
+    | '/google/callback'
     | '/admin/'
+    | '/api/auth/$provider'
     | '/app/chat/$chatId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -431,6 +471,7 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/system'
     | '/admin/users'
+    | '/api/chat'
     | '/app/account'
     | '/app/images'
     | '/app/inbox'
@@ -448,7 +489,10 @@ export interface FileRouteTypes {
     | '/app/videos'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
+    | '/github/callback'
+    | '/google/callback'
     | '/admin'
+    | '/api/auth/$provider'
     | '/app/chat/$chatId'
   id:
     | '__root__'
@@ -472,6 +516,7 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/admin/system'
     | '/admin/users'
+    | '/api/chat'
     | '/app/account'
     | '/app/images'
     | '/app/inbox'
@@ -489,7 +534,10 @@ export interface FileRouteTypes {
     | '/app/videos'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
+    | '/github/callback'
+    | '/google/callback'
     | '/admin/'
+    | '/api/auth/$provider'
     | '/app/chat/$chatId'
   fileRoutesById: FileRoutesById
 }
@@ -501,6 +549,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  ApiChatRoute: typeof ApiChatRoute
   AppAccountRoute: typeof AppAccountRoute
   AppImagesRoute: typeof AppImagesRoute
   AppInboxRoute: typeof AppInboxRoute
@@ -518,6 +567,9 @@ export interface RootRouteChildren {
   AppVideosRoute: typeof AppVideosRoute
   DocsPrivacyPolicyRoute: typeof DocsPrivacyPolicyRoute
   DocsTermsConditionsRoute: typeof DocsTermsConditionsRoute
+  GithubCallbackRoute: typeof GithubCallbackRoute
+  GoogleCallbackRoute: typeof GoogleCallbackRoute
+  ApiAuthProviderRoute: typeof ApiAuthProviderRoute
   AppChatChatIdRoute: typeof AppChatChatIdRoute
 }
 
@@ -670,6 +722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/account': {
       id: '/app/account'
       path: '/app/account'
@@ -789,6 +848,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsTermsConditionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/github/callback': {
+      id: '/github/callback'
+      path: '/github/callback'
+      fullPath: '/github/callback'
+      preLoaderRoute: typeof GithubCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/google/callback': {
+      id: '/google/callback'
+      path: '/google/callback'
+      fullPath: '/google/callback'
+      preLoaderRoute: typeof GoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/$provider': {
+      id: '/api/auth/$provider'
+      path: '/api/auth/$provider'
+      fullPath: '/api/auth/$provider'
+      preLoaderRoute: typeof ApiAuthProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/chat/$chatId': {
       id: '/app/chat/$chatId'
       path: '/app/chat/$chatId'
@@ -843,6 +923,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  ApiChatRoute: ApiChatRoute,
   AppAccountRoute: AppAccountRoute,
   AppImagesRoute: AppImagesRoute,
   AppInboxRoute: AppInboxRoute,
@@ -860,6 +941,9 @@ const rootRouteChildren: RootRouteChildren = {
   AppVideosRoute: AppVideosRoute,
   DocsPrivacyPolicyRoute: DocsPrivacyPolicyRoute,
   DocsTermsConditionsRoute: DocsTermsConditionsRoute,
+  GithubCallbackRoute: GithubCallbackRoute,
+  GoogleCallbackRoute: GoogleCallbackRoute,
+  ApiAuthProviderRoute: ApiAuthProviderRoute,
   AppChatChatIdRoute: AppChatChatIdRoute,
 }
 export const routeTree = rootRouteImport

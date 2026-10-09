@@ -1,0 +1,125 @@
+// Server-only account, password and session handling backed by D1.
+import { getCookie, setCookie, deleteCookie } from "@tanstack/react-start/server";
+import { d1 } from "./d1.server";
+
+export const SESSION_COOKIE = "vision_session";
+const SESSION_DAYS = 30;
+const PBKDF2_ITERATIONS = 100_000;
+
+export type PublicUser = {
+  id: string;
+  email: string;
+  created_at: string;
+  user_metadata: Record<string, any>;
+  app_metadata: Record<string, any>;
+};
+
+const enc = new TextEncoder();
+const hex = (buf: ArrayBuffer) => Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+export function randomToken(bytes = 32) {
+  const a = new Uint8Array(bytes);
+  crypto.getRandomValues(a);
+  return Array.from(a).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+export async function sha256(value: string) {
+  return hex(await crypto.subtle.digest("SHA-256", enc.encode(value)));
+}
+
+export async function hashPassword(password: string, salt: string) {
+  const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: enc.encode(salt), iterations: PBKDF2_ITERATIONS },
+    key,
+    256,
+  );
+  return hex(bits);
+}
+
+function safeEqual(a: string, b: string) {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
+export async function verifyPassword(password: string, salt: string, expected: string) {
+  return safeEqual(await hashPassword(password, salt), expected);
+}
+
+export function toPublicUser(row: any, provider = "email"): PublicUser {
+  let meta: Record<string, any> = {};
+  try { meta = JSON.parse(row.user_metadata || "{}"); } catch { /* ignore */ }
+  return { id: row.id, email: row.email, created_at: row.created_at, user_metadata: meta, app_metadata: { provider } };
+}
+
+/** Limits repeated attempts per key (e.g. sign-in per email/IP). */
+export async function rateLimit(key: string, max: number, windowSec: number) {
+  const now = Math.floor(Date.now() / 1000);
+  const rows = await d1<{ count: number; window_start: number }>("SELECT count, window_start FROM auth_rate_limits WHERE key = ?", [key]);
+  const row = rows[0];
+  if (!row || now - row.window_start > windowSec) {
+    await d1("INSERT INTO auth_rate_limits (key, count, window_start) VALUES (?, 1, ?) ON CONFLICT(key) DO UPDATE SET count = 1, window_start = excluded.window_start", [key, now]);
+    return;
+  }
+  if (row.count >= max) throw new Error("Too many attempts. Please wait a few minutes and try again.");
+  await d1("UPDATE auth_rate_limits SET count = count + 1 WHERE key = ?", [key]);
+}
+
+export async function createUser(email: string, opts: { password?: string; metadata?: Record<string, any> }) {
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  let salt: string | null = null;
+  let hash: string | null = null;
+  if (opts.password) { salt = randomToken(16); hash = await hashPassword(opts.password, salt); }
+  const meta = opts.metadata ?? {};
+  await d1("INSERT INTO auth_users (id, email, password_hash, salt, user_metadata, created_at) VALUES (?, ?, ?, ?, ?, ?)", [id, email, hash, salt, JSON.stringify(meta), now]);
+  await d1("INSERT INTO profiles (id, email, full_name, avatar_url, is_banned, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, ?)", [id, email, meta.full_name ?? null, meta.avatar_url ?? null, now, now]);
+  const count = await d1<{ n: number }>("SELECT COUNT(*) AS n FROM auth_users");
+  // The very first account becomes the admin.
+  if ((count[0]?.n ?? 0) === 1) await d1("INSERT INTO user_roles (id, user_id, role, created_at) VALUES (?, ?, 'admin', ?)", [crypto.randomUUID(), id, now]);
+  await d1("INSERT INTO user_roles (id, user_id, role, created_at) VALUES (?, ?, 'user', ?)", [crypto.randomUUID(), id, now]);
+  return (await d1("SELECT * FROM auth_users WHERE id = ?", [id]))[0];
+}
+
+export async function startSession(userId: string) {
+  const token = randomToken(32);
+  const expires = Math.floor(Date.now() / 1000) + SESSION_DAYS * 86400;
+  await d1("INSERT INTO auth_sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)", [await sha256(token), userId, expires]);
+  setCookie(SESSION_COOKIE, token, {
+    httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: SESSION_DAYS * 86400,
+  });
+}
+
+export async function endSession() {
+  const token = getCookie(SESSION_COOKIE);
+  if (token) await d1("DELETE FROM auth_sessions WHERE token_hash = ?", [await sha256(token)]);
+  deleteCookie(SESSION_COOKIE, { path: "/" });
+}
+
+export type Caller = { user: PublicUser; isAdmin: boolean };
+
+/** Returns the signed-in caller from the secure session cookie, or null. */
+export async function getCaller(): Promise<Caller | null> {
+  const token = getCookie(SESSION_COOKIE);
+  if (!token) return null;
+  const now = Math.floor(Date.now() / 1000);
+  const rows = await d1(
+    `SELECT u.*, p.is_banned AS is_banned,
+       EXISTS(SELECT 1 FROM user_roles r WHERE r.user_id = u.id AND r.role = 'admin') AS is_admin
+     FROM auth_sessions s JOIN auth_users u ON u.id = s.user_id
+     LEFT JOIN profiles p ON p.id = u.id
+     WHERE s.token_hash = ? AND s.expires_at > ?`,
+    [await sha256(token), now],
+  );
+  const row: any = rows[0];
+  if (!row || row.is_banned) return null;
+  return { user: toPublicUser(row), isAdmin: !!row.is_admin };
+}
+
+export async function requireCaller(): Promise<Caller> {
+  const c = await getCaller();
+  if (!c) throw new Error("Please sign in to continue.");
+  return c;
+}

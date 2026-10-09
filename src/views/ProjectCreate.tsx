@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "@/lib/router-compat";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { projectCategories, projectIcons } from "@/lib/project-options";
 import WorkspaceShell from "@/components/WorkspaceShell";
 import { Button } from "@/components/ui/button";

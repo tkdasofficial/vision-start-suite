@@ -1,4 +1,4 @@
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 
 export async function logAdminAction(
   action: string,

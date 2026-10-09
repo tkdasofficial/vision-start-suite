@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import type { ChatMessage } from "@/lib/types";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { useAuth } from "./AuthContext";
 
 export type ChatHistoryItem = {
@@ -275,41 +275,39 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
     [history]
   );
 
+  const savedRef = useRef(new Map<string, string>());
+  const idMapRef = useRef(new Map<string, string>());
+  const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const updateChatMessages = useCallback((id: string, messages: ChatMessage[]) => {
     setHistory((prev) => prev.map((c) => (c.id === id ? { ...c, messages } : c)));
     lsSetMessages(id, messages);
 
-    // Debounced save — only save the latest message that isn't saved yet
-    // We track by checking if the message ID looks like a DB uuid or a timestamp
-    const lastMsg = messages[messages.length - 1];
-    if (!lastMsg) return;
-
-    // Save messages that are new (timestamp-based IDs from the frontend)
-    const newMessages = messages.filter((m) => /^\d+$/.test(m.id));
-    if (newMessages.length === 0) return;
-
-    const rows = newMessages.map((m) => ({
-      id: m.id.length < 36 ? crypto.randomUUID() : m.id,
-      session_id: id,
-      role: m.role as string,
-      content: m.content,
-      image_url: m.imageUrl || null,
-      metadata: buildMetadata(m) as any,
-    }));
-
+    // Debounced save of messages that are new or changed since the last save.
+    const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const pending = messages.filter((m) => m.content && savedRef.current.get(m.id) !== m.content);
+    if (pending.length === 0) return;
+    const rows = pending.map((m) => {
+      if (!UUID.test(m.id) && !idMapRef.current.has(m.id)) idMapRef.current.set(m.id, crypto.randomUUID());
+      return {
+        id: UUID.test(m.id) ? m.id : idMapRef.current.get(m.id)!,
+        session_id: id,
+        role: m.role as string,
+        content: m.content,
+        image_url: m.imageUrl || null,
+        metadata: buildMetadata(m) as any,
+      };
+    });
+    clearTimeout(saveTimers.current[id]);
+    saveTimers.current[id] = setTimeout(() => {
+      pending.forEach((m) => savedRef.current.set(m.id, m.content));
     supabase
       .from("chat_messages")
       .upsert(rows, { onConflict: "id" })
       .then(({ error }) => {
-        if (error) console.error("Failed to save messages:", error);
+        if (error) { console.error("Failed to save messages:", error); pending.forEach((m) => savedRef.current.delete(m.id)); }
       });
-
-    // Update session's updated_at
-    supabase
-      .from("chat_sessions")
-      .update({ updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .then(() => {});
+      supabase.from("chat_sessions").update({ updated_at: new Date().toISOString() }).eq("id", id).then(() => {});
+    }, 800);
   }, []);
 
   const getChatById = useCallback((id: string) => {

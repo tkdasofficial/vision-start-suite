@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { useAuth } from "@/context/AuthContext";
 
 export type BackgroundTask = {

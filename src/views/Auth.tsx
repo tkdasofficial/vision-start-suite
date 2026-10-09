@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Smartphone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.svg";
@@ -19,6 +19,12 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+
+  // Show errors returned from Google/GitHub sign-in.
+  useEffect(() => {
+    const msg = new URLSearchParams(window.location.search).get("error");
+    if (msg) toast({ title: "Sign-in problem", description: msg, variant: "destructive" });
+  }, []);
 
   const handleEmailAuth = async () => {
     if (!email) return;

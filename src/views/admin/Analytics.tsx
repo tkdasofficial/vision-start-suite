@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, AreaChart, Area,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { Radar, Youtube, Globe, Send, Loader2, Trash2, Play, Filter, Mail, CheckCircle2, XCircle, Ban, UserPlus, Clock } from "lucide-react";

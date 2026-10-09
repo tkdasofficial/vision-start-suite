@@ -2,7 +2,7 @@ import { useNavigate } from "@/lib/router-compat";
 import { ArrowLeft, MessageSquare, Mail, HelpCircle, ExternalLink, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/backend/client";
+import { supabase } from "@/lib/cloud/client";
 import { useAuth } from "@/context/AuthContext";
 
 const Support = () => {

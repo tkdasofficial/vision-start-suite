@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { supabase } from "@/backend/client";
-import type { LocalUser as User, LocalSession as Session } from "@/backend/auth";
+import { supabase } from "@/lib/cloud/client";
+import type { LocalUser as User, LocalSession as Session } from "@/lib/cloud/client";
 
 type Profile = {
   id: string;

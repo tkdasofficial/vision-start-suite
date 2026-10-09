@@ -5,7 +5,7 @@ import { useNavigate } from "@/lib/router-compat";
 import { useAuth } from "@/context/AuthContext";
 import { useChatHistory } from "@/context/ChatHistoryContext";
 import { supabase } from "@/backend/client";
-import { collectSearchItems, filterSearchItems, type SearchCategory, type SearchItem } from "@/lib/workspace-search";
+import { assetTypes, collectSearchItems, filterSearchItems, type AssetType, type SearchCategory, type SearchItem } from "@/lib/workspace-search";
 import DesktopSidebar from "@/components/DesktopSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ export default function Search({ library = false }: { library?: boolean }) {
   const { history } = useChatHistory();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<SearchCategory | "all">("all");
+  const [assetType, setAssetType] = useState<AssetType | "all">("all");
   const [items, setItems] = useState<SearchItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -59,7 +60,9 @@ export default function Search({ library = false }: { library?: boolean }) {
     return () => { cancelled = true; };
   }, [user, history]);
 
-  const results = useMemo(() => filterSearchItems(library ? items.filter((item) => item.category !== "chats") : items, query, category), [items, query, category, library]);
+  const libraryItems = useMemo(() => items.filter((item) => item.category !== "chats"), [items]);
+  const availableTypes = assetTypes.filter((type) => libraryItems.some((item) => (item.assetType || "other") === type.value));
+  const results = useMemo(() => filterSearchItems(library ? libraryItems.filter((item) => assetType === "all" || (item.assetType || "other") === assetType) : items, query, category), [items, libraryItems, query, category, library, assetType]);
   const sidebarProps = { onNewChat: () => navigate("/app/new"), onSelectChat: (id: string) => navigate(`/app/chat/${id}`), isMainChat: false, chatHistory: history };
 
   return (
@@ -75,10 +78,10 @@ export default function Search({ library = false }: { library?: boolean }) {
             </div>
         </header>
         <div className="shrink-0 overflow-x-auto px-4 pb-3 sm:px-8">
-            <Tabs value={category} onValueChange={(value) => setCategory(value as SearchCategory | "all")}>
-              <TabsList aria-label="Search categories" className="flex h-auto w-max flex-nowrap justify-start gap-2 bg-transparent p-0">
+            <Tabs value={library ? assetType : category} onValueChange={(value) => library ? setAssetType(value as AssetType | "all") : setCategory(value as SearchCategory | "all")}>
+              <TabsList aria-label={library ? "Library file types" : "Search categories"} className="flex h-auto w-max flex-nowrap justify-start gap-2 bg-transparent p-0">
                 <TabsTrigger className="h-9 flex-none rounded-full border border-border px-4 data-[state=active]:bg-foreground data-[state=active]:text-background" value="all">All</TabsTrigger>
-                {categories.filter((entry) => !library || entry.value !== "chats").map((entry) => <TabsTrigger className="h-9 flex-none rounded-full border border-border px-4 data-[state=active]:bg-foreground data-[state=active]:text-background" key={entry.value} value={entry.value}>{entry.label}</TabsTrigger>)}
+                {(library ? availableTypes : categories).map((entry) => <TabsTrigger className="h-9 flex-none rounded-full border border-border px-4 data-[state=active]:bg-foreground data-[state=active]:text-background" key={entry.value} value={entry.value}>{entry.label}</TabsTrigger>)}
               </TabsList>
             </Tabs>
         </div>

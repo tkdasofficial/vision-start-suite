@@ -37,6 +37,7 @@ import { Route as AppIncognitoRouteImport } from './routes/app.incognito'
 import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
 import { Route as AppLibraryRouteImport } from './routes/app.library'
 import { Route as AppNewRouteImport } from './routes/app.new'
+import { Route as AppProjectCreateRouteImport } from './routes/app.project-create'
 import { Route as AppProjectsRouteImport } from './routes/app.projects'
 import { Route as AppProspectingRouteImport } from './routes/app.prospecting'
 import { Route as AppSearchRouteImport } from './routes/app.search'
@@ -188,6 +189,11 @@ const AppNewRoute = AppNewRouteImport.update({
   path: '/app/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppProjectCreateRoute = AppProjectCreateRouteImport.update({
+  id: '/app/project-create',
+  path: '/app/project-create',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppProjectsRoute = AppProjectsRouteImport.update({
   id: '/app/projects',
   path: '/app/projects',
@@ -267,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/library': typeof AppLibraryRoute
   '/app/new': typeof AppNewRoute
+  '/app/project-create': typeof AppProjectCreateRoute
   '/app/projects': typeof AppProjectsRoute
   '/app/prospecting': typeof AppProspectingRoute
   '/app/search': typeof AppSearchRoute
@@ -306,6 +313,7 @@ export interface FileRoutesByTo {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/library': typeof AppLibraryRoute
   '/app/new': typeof AppNewRoute
+  '/app/project-create': typeof AppProjectCreateRoute
   '/app/projects': typeof AppProjectsRoute
   '/app/prospecting': typeof AppProspectingRoute
   '/app/search': typeof AppSearchRoute
@@ -347,6 +355,7 @@ export interface FileRoutesById {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/library': typeof AppLibraryRoute
   '/app/new': typeof AppNewRoute
+  '/app/project-create': typeof AppProjectCreateRoute
   '/app/projects': typeof AppProjectsRoute
   '/app/prospecting': typeof AppProspectingRoute
   '/app/search': typeof AppSearchRoute
@@ -389,6 +398,7 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/library'
     | '/app/new'
+    | '/app/project-create'
     | '/app/projects'
     | '/app/prospecting'
     | '/app/search'
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/library'
     | '/app/new'
+    | '/app/project-create'
     | '/app/projects'
     | '/app/prospecting'
     | '/app/search'
@@ -468,6 +479,7 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/library'
     | '/app/new'
+    | '/app/project-create'
     | '/app/projects'
     | '/app/prospecting'
     | '/app/search'
@@ -496,6 +508,7 @@ export interface RootRouteChildren {
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLibraryRoute: typeof AppLibraryRoute
   AppNewRoute: typeof AppNewRoute
+  AppProjectCreateRoute: typeof AppProjectCreateRoute
   AppProjectsRoute: typeof AppProjectsRoute
   AppProspectingRoute: typeof AppProspectingRoute
   AppSearchRoute: typeof AppSearchRoute
@@ -706,6 +719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/project-create': {
+      id: '/app/project-create'
+      path: '/app/project-create'
+      fullPath: '/app/project-create'
+      preLoaderRoute: typeof AppProjectCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/projects': {
       id: '/app/projects'
       path: '/app/projects'
@@ -830,6 +850,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppLibraryRoute: AppLibraryRoute,
   AppNewRoute: AppNewRoute,
+  AppProjectCreateRoute: AppProjectCreateRoute,
   AppProjectsRoute: AppProjectsRoute,
   AppProspectingRoute: AppProspectingRoute,
   AppSearchRoute: AppSearchRoute,

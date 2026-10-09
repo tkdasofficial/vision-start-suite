@@ -1,4 +1,5 @@
-# Navigation update
-- [x] Update sidebar actions and transparent header.
-- [x] Add search across recent chats, uploaded files, and generated items.
-- [x] Verify navigation and search behavior.
+# Sidebar and Search refinement
+- [ ] Simplify sidebar branding, empty suggestions, and main header controls.
+- [ ] Add memory-only Incognito Chat without saving private activity.
+- [ ] Align Search back button and search bar with scrolling pill filters.
+- [ ] Verify UI and privacy behavior.

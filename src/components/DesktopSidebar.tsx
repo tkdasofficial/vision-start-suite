@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
-import { PenSquare, Search, MessageSquare, Pencil, Trash2, Check, X, Image, Video, FileText, Music, Sparkles, Plug, Radar } from "lucide-react";
+import { Search, Pencil, Trash2, Check, X, Plug, Radar } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
 import { useState } from "react";
 import { useChatHistory } from "@/context/ChatHistoryContext";
 import logo from "@/assets/logo.svg";
+import { Button } from "@/components/ui/button";
+import SidebarActions from "@/components/SidebarActions";
 
 type Props = {
   onNewChat: () => void;
@@ -15,14 +17,12 @@ type Props = {
 
 const DesktopSidebar = ({ onNewChat, onSelectChat, isMainChat, activeChatId, chatHistory }: Props) => {
   const navigate = useNavigate();
-  const { renameChat, deleteChat, searchHistory } = useChatHistory();
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { renameChat, deleteChat } = useChatHistory();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   
 
-  const displayHistory = searchQuery ? searchHistory(searchQuery) : chatHistory;
+  const displayHistory = chatHistory;
 
   const startRename = (chat: { id: string; title: string }) => {
     setEditingId(chat.id);
@@ -37,62 +37,11 @@ const DesktopSidebar = ({ onNewChat, onSelectChat, isMainChat, activeChatId, cha
   };
 
   return (
-    <aside className="hidden lg:flex flex-col w-[260px] bg-sidebar border-r border-sidebar-border h-full shrink-0">
-      <div className="flex items-center gap-2.5 px-4 py-4">
+    <aside className="hidden lg:flex flex-col w-[260px] bg-sidebar border-r border-sidebar-border h-full min-h-0 shrink-0">
+      <div className="flex shrink-0 items-center gap-2.5 px-4 py-4">
         <img src={logo} alt="Super Copilot" className="w-8 h-8 rounded-full object-cover" />
-        <span className="font-display font-semibold text-foreground text-sm">Super Copilot</span>
-      </div>
-
-      <div className="px-3 pb-2 space-y-0.5">
-        <button
-          onClick={onNewChat}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-        >
-          <PenSquare className="w-4 h-4" />
-          <span>New chat</span>
-        </button>
-        <button
-          onClick={() => { setSearchOpen(!searchOpen); setSearchQuery(""); }}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-        >
-          <Search className="w-4 h-4" />
-          <span>Search</span>
-        </button>
-        {searchOpen && (
-          <div className="px-1 pb-1">
-            <input
-              autoFocus
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search chats..."
-              className="w-full px-3 py-2 rounded-lg text-sm bg-sidebar-accent text-sidebar-foreground placeholder:text-muted-foreground outline-none border border-sidebar-border focus:border-primary/40 transition-colors"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Media quick-launch */}
-      <div className="px-3 pt-3">
-        <p className="px-3 pb-1.5 text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Media</p>
-        <div className="flex items-center gap-1.5 px-1">
-          {[
-            { icon: Image, label: "Image", prompt: "Generate an image of " },
-            { icon: Video, label: "Video", prompt: "Create a video about " },
-            { icon: FileText, label: "File", prompt: "Create a file: " },
-            { icon: Music, label: "Audio", prompt: "Generate audio for " },
-            { icon: Sparkles, label: "Other", prompt: "" },
-          ].map(({ icon: Icon, label, prompt }) => (
-            <button
-              key={label}
-              onClick={() => { onNewChat(); if (prompt) sessionStorage.setItem("prefill_prompt", prompt); }}
-              title={label}
-              className="group flex-1 aspect-square flex flex-col items-center justify-center gap-0.5 rounded-lg border border-sidebar-border bg-sidebar-accent/30 hover:bg-sidebar-accent hover:border-primary/40 transition-colors"
-            >
-              <Icon className="w-3.5 h-3.5 text-sidebar-foreground group-hover:text-primary" />
-              <span className="text-[9px] text-muted-foreground group-hover:text-foreground">{label}</span>
-            </button>
-          ))}
-        </div>
+        <span className="flex-1 font-display font-semibold text-foreground text-sm">Super Copilot</span>
+        <Button variant="secondary" size="icon" className="shrink-0 rounded-full" aria-label="Open search" title="Search" onClick={() => navigate("/app/search")}><Search /></Button>
       </div>
 
       {/* Integrations */}
@@ -120,9 +69,9 @@ const DesktopSidebar = ({ onNewChat, onSelectChat, isMainChat, activeChatId, cha
       </div>
 
       {displayHistory.length > 0 && (
-        <div className="px-3 pt-4 flex-1 overflow-y-auto">
+        <div className="px-3 pt-4 pb-2 min-h-0 flex-1 overflow-y-auto">
           <p className="px-3 pb-1.5 text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
-            {searchQuery ? "Results" : "Recent"}
+            Recent
           </p>
           <nav className="space-y-0.5">
             {displayHistory.map((chat) => (
@@ -177,6 +126,7 @@ const DesktopSidebar = ({ onNewChat, onSelectChat, isMainChat, activeChatId, cha
           </nav>
         </div>
       )}
+      <SidebarActions onNewChat={onNewChat} />
     </aside>
   );
 };

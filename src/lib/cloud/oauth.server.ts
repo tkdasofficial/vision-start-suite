@@ -25,7 +25,10 @@ const label = (p: Provider) => (p === "google" ? "Google" : "GitHub");
 
 const redirectUri = (req: Request, p: Provider) =>
   providerCallbackUrl(process.env.AUTH_ORIGIN || new URL(req.url).origin, p);
-const back = (req: Request, path: string) => Response.redirect(new URL(path, req.url).toString(), 302);
+// Response.redirect() has immutable headers, which breaks the dev server's
+// header merging ("TypeError: immutable") — build redirects manually instead.
+const redirectTo = (url: string) => new Response(null, { status: 302, headers: { Location: url } });
+const back = (req: Request, path: string) => redirectTo(new URL(path, req.url).toString());
 
 export async function startOAuth(req: Request, p: Provider) {
   const c = envCreds(p);
@@ -40,7 +43,7 @@ export async function startOAuth(req: Request, p: Provider) {
   url.searchParams.set("state", state);
   if (p === "google") { url.searchParams.set("response_type", "code"); url.searchParams.set("scope", "openid email profile"); url.searchParams.set("prompt", "select_account"); }
   else url.searchParams.set("scope", "read:user user:email");
-  return Response.redirect(url.toString(), 302);
+  return redirectTo(url.toString());
 }
 
 async function profileFor(p: Provider, code: string, req: Request, c: Creds) {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
 import { supabase } from "@/lib/cloud/client";
-import { Eye, EyeOff, ArrowLeft, ShieldCheck, Smartphone } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, ShieldCheck, Smartphone, Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.svg";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -285,8 +285,8 @@ const Auth = () => {
               onClick={() => navigate("/enterprise")}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full border border-border bg-transparent text-sm font-medium text-foreground hover:bg-accent transition-colors"
             >
-              <ShieldCheck className="w-[18px] h-[18px]" />
-              Enterprise Login
+              <Building2 className="w-[18px] h-[18px]" />
+              Sign in with Company
             </button>
           </div>
         )}

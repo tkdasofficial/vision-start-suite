@@ -131,3 +131,4 @@ export async function sendMail(to: string, subject: string, text: string) {
     try { writer.releaseLock(); reader.releaseLock(); await socket.close(); } catch { /* ignore */ }
   }
 }
+}

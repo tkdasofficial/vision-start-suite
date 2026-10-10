@@ -366,7 +366,22 @@ const Auth = () => {
             </button>
           )}
         </p>
+
+        {mode !== "forgot" && (
+          <div className="border-t border-border/60 pt-4 flex flex-col items-center gap-2">
+            <p className="text-xs text-muted-foreground text-center">Secure Access for Your Business</p>
+            <button
+              type="button"
+              onClick={() => navigate("/enterprise")}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Enterprise Login
+            </button>
+          </div>
+        )}
       </div>
+
     </div>
   );
 };

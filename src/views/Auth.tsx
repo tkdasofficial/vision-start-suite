@@ -258,6 +258,14 @@ const Auth = () => {
               </svg>
               Continue with GitHub
             </button>
+            <button
+              type="button"
+              onClick={() => navigate("/enterprise")}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full border border-border bg-transparent text-sm font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              <ShieldCheck className="w-[18px] h-[18px]" />
+              Enterprise Login
+            </button>
           </div>
         )}
 
@@ -365,19 +373,6 @@ const Auth = () => {
           )}
         </p>
       </div>
-
-      {mode !== "forgot" && (
-        <div className="w-full max-w-sm mx-auto pt-8 border-t border-border">
-          <button
-            type="button"
-            onClick={() => navigate("/enterprise")}
-            className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-            <span>Secure access for your business — <span className="font-medium text-foreground">Enterprise Login</span></span>
-          </button>
-        </div>
-      )}
     </div>
   );
 };

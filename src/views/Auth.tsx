@@ -371,17 +371,19 @@ const Auth = () => {
           )}
 
           <button
-            onClick={handleEmailAuth}
+            onClick={step === "email" || mode === "forgot" ? handleEmailContinue : handleEmailAuth}
             disabled={loading}
             className="w-full py-3 rounded-full bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {loading
               ? "Loading..."
-              : mode === "login"
-                ? "Continue"
-                : mode === "signup"
-                ? "Create account"
-                : "Send reset code"}
+              : mode === "forgot"
+                ? "Send reset code"
+                : step === "email"
+                  ? "Continue"
+                  : mode === "login"
+                    ? "Log in"
+                    : "Create account"}
           </button>
         </div>
 

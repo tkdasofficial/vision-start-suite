@@ -33,8 +33,10 @@ export async function sendMail(to: string, subject: string, text: string) {
   if (!password) throw new Error("Email is not configured");
   const from = await senderAddress();
 
-  // Available only in the Workers runtime; kept out of static analysis.
-  const { connect } = await import(/* @vite-ignore */ "cloudflare:sockets");
+  // Available only in the Workers runtime; the variable specifier keeps it
+  // out of bundler/test static analysis.
+  const socketsModule = "cloudflare:sockets";
+  const { connect } = await import(/* @vite-ignore */ socketsModule);
   const socket = connect("smtp.gmail.com:465", { secureTransport: "on" });
   const writer = socket.writable.getWriter();
   const reader = socket.readable.getReader();

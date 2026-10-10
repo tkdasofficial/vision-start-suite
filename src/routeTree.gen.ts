@@ -46,7 +46,6 @@ import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSupportRouteImport } from './routes/app.support'
 import { Route as AppUpgradeRouteImport } from './routes/app.upgrade'
 import { Route as AppVideosRouteImport } from './routes/app.videos'
-import { Route as CloudflareCallbackRouteImport } from './routes/cloudflare.callback'
 import { Route as DocsPrivacyPolicyRouteImport } from './routes/docs.privacy-policy'
 import { Route as DocsTermsConditionsRouteImport } from './routes/docs.terms-conditions'
 import { Route as GithubCallbackRouteImport } from './routes/github.callback'
@@ -239,11 +238,6 @@ const AppVideosRoute = AppVideosRouteImport.update({
   path: '/app/videos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CloudflareCallbackRoute = CloudflareCallbackRouteImport.update({
-  id: '/cloudflare/callback',
-  path: '/cloudflare/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DocsPrivacyPolicyRoute = DocsPrivacyPolicyRouteImport.update({
   id: '/docs/privacy-policy',
   path: '/docs/privacy-policy',
@@ -312,7 +306,6 @@ export interface FileRoutesByFullPath {
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
   '/app/videos': typeof AppVideosRoute
-  '/cloudflare/callback': typeof CloudflareCallbackRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
   '/github/callback': typeof GithubCallbackRoute
@@ -357,7 +350,6 @@ export interface FileRoutesByTo {
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
   '/app/videos': typeof AppVideosRoute
-  '/cloudflare/callback': typeof CloudflareCallbackRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
   '/github/callback': typeof GithubCallbackRoute
@@ -404,7 +396,6 @@ export interface FileRoutesById {
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
   '/app/videos': typeof AppVideosRoute
-  '/cloudflare/callback': typeof CloudflareCallbackRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
   '/github/callback': typeof GithubCallbackRoute
@@ -452,7 +443,6 @@ export interface FileRouteTypes {
     | '/app/support'
     | '/app/upgrade'
     | '/app/videos'
-    | '/cloudflare/callback'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
     | '/github/callback'
@@ -497,7 +487,6 @@ export interface FileRouteTypes {
     | '/app/support'
     | '/app/upgrade'
     | '/app/videos'
-    | '/cloudflare/callback'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
     | '/github/callback'
@@ -543,7 +532,6 @@ export interface FileRouteTypes {
     | '/app/support'
     | '/app/upgrade'
     | '/app/videos'
-    | '/cloudflare/callback'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
     | '/github/callback'
@@ -577,7 +565,6 @@ export interface RootRouteChildren {
   AppSupportRoute: typeof AppSupportRoute
   AppUpgradeRoute: typeof AppUpgradeRoute
   AppVideosRoute: typeof AppVideosRoute
-  CloudflareCallbackRoute: typeof CloudflareCallbackRoute
   DocsPrivacyPolicyRoute: typeof DocsPrivacyPolicyRoute
   DocsTermsConditionsRoute: typeof DocsTermsConditionsRoute
   GithubCallbackRoute: typeof GithubCallbackRoute
@@ -847,13 +834,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVideosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cloudflare/callback': {
-      id: '/cloudflare/callback'
-      path: '/cloudflare/callback'
-      fullPath: '/cloudflare/callback'
-      preLoaderRoute: typeof CloudflareCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/docs/privacy-policy': {
       id: '/docs/privacy-policy'
       path: '/docs/privacy-policy'
@@ -959,7 +939,6 @@ const rootRouteChildren: RootRouteChildren = {
   AppSupportRoute: AppSupportRoute,
   AppUpgradeRoute: AppUpgradeRoute,
   AppVideosRoute: AppVideosRoute,
-  CloudflareCallbackRoute: CloudflareCallbackRoute,
   DocsPrivacyPolicyRoute: DocsPrivacyPolicyRoute,
   DocsTermsConditionsRoute: DocsTermsConditionsRoute,
   GithubCallbackRoute: GithubCallbackRoute,

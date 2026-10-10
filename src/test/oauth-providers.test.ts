@@ -3,15 +3,14 @@ import { providerCallbackUrl } from "@/lib/cloud/oauth-urls";
 
 describe("providerCallbackUrl", () => {
   it("builds the callback for each provider from one origin", () => {
-    const origin = "https://project--e26fe501-ea6b-4f0e-b783-e17668983052.lovable.app";
+    const origin = "https://vision-auth.workers.dev";
     expect(providerCallbackUrl(origin, "google")).toBe(`${origin}/google/callback`);
     expect(providerCallbackUrl(origin, "github")).toBe(`${origin}/github/callback`);
-    expect(providerCallbackUrl(origin, "cloudflare")).toBe(`${origin}/cloudflare/callback`);
   });
 
   it("trims a trailing slash so provider dashboards stay 200 OK", () => {
-    expect(providerCallbackUrl("https://vision.example.com/", "cloudflare")).toBe(
-      "https://vision.example.com/cloudflare/callback"
+    expect(providerCallbackUrl("https://vision.example.com/", "github")).toBe(
+      "https://vision.example.com/github/callback"
     );
   });
 

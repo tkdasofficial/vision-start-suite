@@ -34,3 +34,8 @@ export function canonicalEmail(email: string): string {
 export function isDisposableDomain(domain: string): boolean {
   return DISPOSABLE.has(domain);
 }
+
+/** When OAuth links to an existing account: an unverified password must not survive (account pre-hijacking). */
+export function oauthLinkMustResetPassword(row: { email_verified: number | boolean | null; password_hash: string | null }): boolean {
+  return !row.email_verified && !!row.password_hash;
+}

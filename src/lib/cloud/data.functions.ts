@@ -12,6 +12,10 @@ export const runDataQuery = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { getCaller } = await import("./auth.server");
     const { runQuery } = await import("./query.server");
+    if (data.action !== "select") {
+      const { assertSameOrigin, currentFacts } = await import("./security.server");
+      assertSameOrigin(currentFacts());
+    }
     const caller = await getCaller();
     const res = await runQuery(data, caller);
     return res;

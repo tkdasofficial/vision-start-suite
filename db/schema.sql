@@ -35,11 +35,14 @@ CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);
 CREATE TABLE IF NOT EXISTS workspace_projects (id TEXT PRIMARY KEY, user_id TEXT, name TEXT, icon TEXT, category TEXT, session_id TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')), updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')));
 CREATE INDEX IF NOT EXISTS idx_workspace_projects_user_id ON workspace_projects(user_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_projects_session_id ON workspace_projects(session_id);
-CREATE TABLE IF NOT EXISTS auth_users (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT, salt TEXT, user_metadata TEXT DEFAULT '{}', created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')));
+CREATE TABLE IF NOT EXISTS auth_users (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT, salt TEXT, user_metadata TEXT DEFAULT '{}', created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')), email_verified INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS auth_identities (provider TEXT NOT NULL, provider_user_id TEXT NOT NULL, user_id TEXT NOT NULL, PRIMARY KEY(provider, provider_user_id));
 CREATE TABLE IF NOT EXISTS auth_sessions (token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, expires_at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(user_id);
-CREATE TABLE IF NOT EXISTS auth_rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, window_start INTEGER NOT NULL);-- Security system
+CREATE TABLE IF NOT EXISTS auth_rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, window_start INTEGER NOT NULL);CREATE TABLE IF NOT EXISTS auth_otps (email TEXT PRIMARY KEY, code_hash TEXT NOT NULL, expires_at INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS user_files (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, name TEXT NOT NULL, mime TEXT NOT NULL, kind TEXT NOT NULL, size INTEGER NOT NULL DEFAULT 0, drive_file_id TEXT NOT NULL, url TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS app_config (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+-- Security system
 CREATE TABLE IF NOT EXISTS security_restrictions (scope TEXT NOT NULL, subject TEXT NOT NULL, reason TEXT, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY(scope, subject));
 CREATE TABLE IF NOT EXISTS security_events (id TEXT PRIMARY KEY, type TEXT NOT NULL, decision TEXT, subject TEXT, reasons TEXT DEFAULT '[]', details TEXT DEFAULT '{}', created_at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS security_events_created ON security_events(created_at);

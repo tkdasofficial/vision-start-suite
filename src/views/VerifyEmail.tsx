@@ -11,13 +11,13 @@ const VerifyEmail = () => {
   const { toast } = useToast();
   const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const email = params.get("email") ?? "";
+  const [code, setCode] = useState("");
   const isReset = params.get("mode") === "reset";
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);
   const mismatch = isReset && confirm.length > 0 && password !== confirm;
   const canSubmit = code.length === 8 && (!isReset || (password.length >= 8 && password === confirm));
-  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 

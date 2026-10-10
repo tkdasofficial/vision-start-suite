@@ -4,7 +4,8 @@ export const Route = createFileRoute("/api/auth/$provider")({
   server: {
     handlers: {
       GET: async ({ request, params }) => {
-        if (params.provider !== "google" && params.provider !== "github") return new Response("Not found", { status: 404 });
+        if (params.provider !== "google" && params.provider !== "github" && params.provider !== "cloudflare")
+          return new Response("Not found", { status: 404 });
         const { startOAuth } = await import("@/lib/cloud/oauth.server");
         return startOAuth(request, params.provider);
       },

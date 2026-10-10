@@ -23,4 +23,5 @@
 - Library derives applicable file-type filters from the shared search index metadata. Why: avoids separate storage and keeps Search and Library classifications consistent.
 
 - Sign-in uses PBKDF2 password hashes and hashed session tokens in D1 with an HttpOnly cookie; Google/GitHub OAuth callbacks live at /google/callback and /github/callback. Why: no third-party auth service; tokens never reach browser scripts.
+- Every OAuth provider callback URL derives from `AUTH_ORIGIN` (env) or the request origin via `src/lib/cloud/oauth-urls.ts`; a new provider needs a `startOAuth` branch, a `profileFor` branch and a `/<provider>/callback` route. Why: a domain change updates one origin value and provider dashboards stay valid.
 - Chat AI streams from Cloudflare Workers AI via the signed-in-only /api/chat server route, choosing a model per message. Why: user chose Workers AI for LLM only; keys stay on the server.

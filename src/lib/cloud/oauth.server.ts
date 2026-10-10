@@ -82,17 +82,33 @@ export async function finishOAuth(req: Request, p: Provider) {
     return back(req, "/login?error=" + encodeURIComponent("Sign-in was cancelled or expired. Please try again."));
   try {
     const prof = await profileFor(p, code, req, c);
+    let newAccount = false;
     let userId = (await d1<{ user_id: string }>("SELECT user_id FROM auth_identities WHERE provider = ? AND provider_user_id = ?", [p, prof.id]))[0]?.user_id;
     if (!userId) {
       // Link to an existing account with the same verified email, or create one.
       userId = (await d1<{ id: string }>("SELECT id FROM auth_users WHERE email = ?", [prof.email]))[0]?.id;
-      if (!userId) userId = (await createUser(prof.email, { metadata: { full_name: prof.name, avatar_url: prof.avatar } })).id;
+      if (!userId) {
+        // New account via OAuth: same signup abuse policy as the email form.
+        const S = await import("./security.server");
+        const { evaluateSignup, recordAccountCreated } = await import("../../../security");
+        const facts = S.factsFrom(req.headers, S.ensureDeviceId());
+        const keys = await S.keysFor(facts, prof.email);
+        const verdict = await evaluateSignup(S.d1Store, { entry: "oauth", email: prof.email, req: facts, keys });
+        if (!verdict.allowed) return back(req, "/login?error=" + encodeURIComponent(verdict.userMessage ?? "Sign-up is temporarily unavailable."));
+        userId = (await createUser(prof.email, { metadata: { full_name: prof.name, avatar_url: prof.avatar } })).id;
+        await recordAccountCreated(S.d1Store, prof.email, keys);
+        newAccount = true;
+      }
       await d1("INSERT OR IGNORE INTO auth_identities (provider, provider_user_id, user_id) VALUES (?, ?, ?)", [p, prof.id, userId]);
     }
     // Provider-verified email — no code needed.
     await d1("UPDATE auth_users SET email_verified = 1 WHERE id = ?", [userId]);
     const banned = (await d1<{ is_banned: number }>("SELECT is_banned FROM profiles WHERE id = ?", [userId]))[0]?.is_banned;
     if (banned) return back(req, "/login?error=" + encodeURIComponent("This account has been suspended."));
+    if (newAccount) {
+      const S = await import("./security.server");
+      await S.grantWelcomeCredits(userId!, prof.email, S.factsFrom(req.headers, S.ensureDeviceId()));
+    }
     await startSession(userId!);
     return back(req, "/app/new");
   } catch (e) {

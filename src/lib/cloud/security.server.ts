@@ -77,7 +77,7 @@ export function factsFrom(headers: Headers, deviceId: string | null): RequestFac
     acceptLanguage: (headers.get("accept-language") ?? "").slice(0, 100),
     secFetchSite: headers.get("sec-fetch-site"),
     origin: headers.get("origin"),
-    host: headers.get("x-forwarded-host") && false ? null : headers.get("host"),
+    host: headers.get("host"),
     deviceId,
   };
 }

@@ -391,14 +391,14 @@ const Auth = () => {
           {mode === "login" ? (
             <>
               Don't have an account?{" "}
-              <button onClick={() => { setMode("signup"); navigate("/signup"); }} className="text-foreground font-medium underline underline-offset-4 hover:opacity-80">
+              <button onClick={() => { setMode("signup"); setStep("email"); setPassword(""); navigate("/signup"); }} className="text-foreground font-medium underline underline-offset-4 hover:opacity-80">
                 Create your account
               </button>
             </>
           ) : mode === "signup" ? (
             <>
               Already have an account?{" "}
-              <button onClick={() => { setMode("login"); navigate("/login"); }} className="text-foreground font-medium underline underline-offset-4 hover:opacity-80">
+              <button onClick={() => { setMode("login"); setStep("email"); setPassword(""); navigate("/login"); }} className="text-foreground font-medium underline underline-offset-4 hover:opacity-80">
                 Log in
               </button>
             </>

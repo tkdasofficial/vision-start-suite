@@ -5,6 +5,7 @@
 import { getCookie, setCookie, deleteCookie } from "@tanstack/react-start/server";
 import { d1 } from "./d1.server";
 import { createUser, randomToken, startSession } from "./auth.server";
+import { providerCallbackUrl, type OAuthProvider } from "./oauth-urls";
 
 export type Provider = "google" | "github" | "cloudflare";
 const STATE_COOKIE = "vision_oauth_state";

@@ -13,6 +13,8 @@ const Auth = () => {
   const { toast } = useToast();
   const { pathname } = useLocation();
   const [mode, setMode] = useState<Mode>(pathname === "/signup" ? "signup" : pathname === "/forgot-password" ? "forgot" : "login");
+  // Two-step email auth: "email" first (validated server-side), then "password".
+  const [step, setStep] = useState<"email" | "password">("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +29,26 @@ const Auth = () => {
     const msg = new URLSearchParams(window.location.search).get("error");
     if (msg) toast({ title: "Sign-in problem", description: msg, variant: "destructive" });
   }, []);
+
+  // Step 1: validate the email on the server before showing the password field.
+  const handleEmailContinue = async () => {
+    if (!email) return;
+    setLoading(true);
+    try {
+      const { checkEmailFn } = await import("@/lib/cloud/auth.functions");
+      const r = await checkEmailFn({ data: { email } });
+      if (!r.ok) throw new Error(r.error ?? "Enter a valid email address.");
+      if (mode === "forgot") {
+        await handleEmailAuth();
+        return;
+      }
+      setStep("password");
+    } catch (e: any) {
+      toast({ title: "Check your email", description: e.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailAuth = async () => {
     if (!email) return;
@@ -290,18 +312,31 @@ const Auth = () => {
           />
 
           <div className="space-y-1.5">
-            <label htmlFor="auth-email" className="text-sm font-medium text-foreground">Email</label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="auth-email" className="text-sm font-medium text-foreground">Email</label>
+              {step === "password" && mode !== "forgot" && (
+                <button
+                  type="button"
+                  onClick={() => { setStep("email"); setPassword(""); }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Change
+                </button>
+              )}
+            </div>
             <input
               id="auth-email"
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-full border border-border bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-foreground/30 transition-colors"
+              onKeyDown={(e) => e.key === "Enter" && (step === "email" || mode === "forgot") && handleEmailContinue()}
+              readOnly={step === "password" && mode !== "forgot"}
+              className={`w-full px-4 py-3 rounded-full border border-border bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-foreground/30 transition-colors ${step === "password" && mode !== "forgot" ? "opacity-70" : ""}`}
             />
           </div>
 
-          {mode !== "forgot" && (
+          {mode !== "forgot" && step === "password" && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label htmlFor="auth-password" className="text-sm font-medium text-foreground">Password</label>
@@ -336,17 +371,19 @@ const Auth = () => {
           )}
 
           <button
-            onClick={handleEmailAuth}
+            onClick={step === "email" || mode === "forgot" ? handleEmailContinue : handleEmailAuth}
             disabled={loading}
             className="w-full py-3 rounded-full bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {loading
               ? "Loading..."
-              : mode === "login"
-                ? "Continue"
-                : mode === "signup"
-                ? "Create account"
-                : "Send reset code"}
+              : mode === "forgot"
+                ? "Send reset code"
+                : step === "email"
+                  ? "Continue"
+                  : mode === "login"
+                    ? "Log in"
+                    : "Create account"}
           </button>
         </div>
 
@@ -354,14 +391,14 @@ const Auth = () => {
           {mode === "login" ? (
             <>
               Don't have an account?{" "}
-              <button onClick={() => { setMode("signup"); navigate("/signup"); }} className="text-foreground font-medium underline underline-offset-4 hover:opacity-80">
+              <button onClick={() => { setMode("signup"); setStep("email"); setPassword(""); navigate("/signup"); }} className="text-foreground font-medium underline underline-offset-4 hover:opacity-80">
                 Create your account
               </button>
             </>
           ) : mode === "signup" ? (
             <>
               Already have an account?{" "}
-              <button onClick={() => { setMode("login"); navigate("/login"); }} className="text-foreground font-medium underline underline-offset-4 hover:opacity-80">
+              <button onClick={() => { setMode("login"); setStep("email"); setPassword(""); navigate("/login"); }} className="text-foreground font-medium underline underline-offset-4 hover:opacity-80">
                 Log in
               </button>
             </>

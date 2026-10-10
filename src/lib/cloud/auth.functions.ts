@@ -10,6 +10,30 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(async ()
 
 type Hints = { honeypot?: string; elapsedMs?: number };
 
+// First step of email auth: validate the address server-side (format, same-origin,
+// rate limits, mail-domain DNS) before the password field is shown. The response is
+// generic — it never reveals whether an account exists.
+export const checkEmailFn = createServerFn({ method: "POST" })
+  .inputValidator((d: { email: string }) => d)
+  .handler(async ({ data }): Promise<{ ok: boolean; error: string | null }> => {
+    const S = await sec();
+    const email = S.normalizeEmail(data?.email);
+    if (!S.isValidEmail(email)) return { ok: false, error: "Enter a valid email address." };
+    const facts = S.currentFacts();
+    try { S.assertSameOrigin(facts); } catch (e: any) { return { ok: false, error: e.message }; }
+    const keys = await S.keysFor(facts, email);
+    const L = S.SECURITY_CONFIG.limits;
+    try {
+      await S.enforceLimits(S.d1Store, [[`emailck:email:${keys.emailKey}`, L.loginPerEmail], [keys.ipKey && `emailck:ip:${keys.ipKey}`, L.loginPerIp]]);
+    } catch (e: any) { return { ok: false, error: e.message }; }
+    const domain = email.split("@")[1];
+    const dns = await S.checkMailDomain(domain);
+    if (dns === "nxdomain" || dns === "no_mail") {
+      return { ok: false, error: "This email address can't receive mail. Check for typos." };
+    }
+    return { ok: true, error: null };
+  });
+
 async function sec() {
   const s = await import("./security.server");
   const core = await import("../../../security");

@@ -7,3 +7,4 @@
 - [x] Add applicable Library file-type filters.
 - [x] Update Projects header and add a separate creation page with optional icon, name, and category.
 - [x] Verify filters, creation, persistence, and small-screen layout.
+- [ ] Cloudflare sign-in: user pastes Team Domain, Client ID, Client Secret into secure form (blocked on user)

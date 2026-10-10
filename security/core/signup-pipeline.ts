@@ -7,6 +7,7 @@ import { evaluateRisk, blocks } from "../risk/risk-engine";
 import { enforceLimits, nowSec } from "../rate-limits/rate-limit-engine";
 import { isRestricted, restrict } from "../enforcement/restrictions";
 import { audit } from "../audit/audit-logger";
+import { sha256Hex } from "../utils/crypto";
 
 export type SignupKeys = { ipKey: string | null; networkKey: string | null; deviceKey: string | null; emailKey: string };
 
@@ -85,6 +86,5 @@ export async function recordAccountCreated(store: SecurityStore, email: string, 
 }
 
 async function canonicalKey(email: string) {
-  const { sha256Hex } = await import("../utils/crypto");
   return (await sha256Hex(canonicalEmail(email))).slice(0, 32);
 }

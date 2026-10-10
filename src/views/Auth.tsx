@@ -230,7 +230,7 @@ const Auth = () => {
           </h1>
           <p className="text-sm text-muted-foreground text-center">
             {mode === "forgot"
-              ? "Enter your email and we'll send a reset link"
+              ? "Enter your email and we'll send a reset code"
               : mode === "signup"
               ? "Sign up to start using Vision"
               : "Sign in to your Vision account"}
@@ -335,7 +335,7 @@ const Auth = () => {
               ? "Sign in"
               : mode === "signup"
               ? "Create account"
-              : "Send reset link"}
+              : "Send reset code"}
           </button>
         </div>
 

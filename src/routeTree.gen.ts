@@ -31,6 +31,7 @@ import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminSystemRouteImport } from './routes/admin.system'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiFilesRouteImport } from './routes/api/files'
 import { Route as AppAccountRouteImport } from './routes/app.account'
 import { Route as AppImagesRouteImport } from './routes/app.images'
 import { Route as AppInboxRouteImport } from './routes/app.inbox'
@@ -162,6 +163,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFilesRoute = ApiFilesRouteImport.update({
+  id: '/api/files',
+  path: '/api/files',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppAccountRoute = AppAccountRouteImport.update({
@@ -297,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/admin/system': typeof AdminSystemRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/files': typeof ApiFilesRoute
   '/app/account': typeof AppAccountRoute
   '/app/images': typeof AppImagesRoute
   '/app/inbox': typeof AppInboxRoute
@@ -342,6 +349,7 @@ export interface FileRoutesByTo {
   '/admin/system': typeof AdminSystemRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/files': typeof ApiFilesRoute
   '/app/account': typeof AppAccountRoute
   '/app/images': typeof AppImagesRoute
   '/app/inbox': typeof AppInboxRoute
@@ -389,6 +397,7 @@ export interface FileRoutesById {
   '/admin/system': typeof AdminSystemRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/files': typeof ApiFilesRoute
   '/app/account': typeof AppAccountRoute
   '/app/images': typeof AppImagesRoute
   '/app/inbox': typeof AppInboxRoute
@@ -437,6 +446,7 @@ export interface FileRouteTypes {
     | '/admin/system'
     | '/admin/users'
     | '/api/chat'
+    | '/api/files'
     | '/app/account'
     | '/app/images'
     | '/app/inbox'
@@ -482,6 +492,7 @@ export interface FileRouteTypes {
     | '/admin/system'
     | '/admin/users'
     | '/api/chat'
+    | '/api/files'
     | '/app/account'
     | '/app/images'
     | '/app/inbox'
@@ -528,6 +539,7 @@ export interface FileRouteTypes {
     | '/admin/system'
     | '/admin/users'
     | '/api/chat'
+    | '/api/files'
     | '/app/account'
     | '/app/images'
     | '/app/inbox'
@@ -562,6 +574,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiFilesRoute: typeof ApiFilesRoute
   AppAccountRoute: typeof AppAccountRoute
   AppImagesRoute: typeof AppImagesRoute
   AppInboxRoute: typeof AppInboxRoute
@@ -739,6 +752,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/files': {
+      id: '/api/files'
+      path: '/api/files'
+      fullPath: '/api/files'
+      preLoaderRoute: typeof ApiFilesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/account': {
@@ -953,6 +973,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiFilesRoute: ApiFilesRoute,
   AppAccountRoute: AppAccountRoute,
   AppImagesRoute: AppImagesRoute,
   AppInboxRoute: AppInboxRoute,

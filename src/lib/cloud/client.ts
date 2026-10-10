@@ -80,8 +80,8 @@ async function loadUser() {
 }
 
 const auth = {
-  async signUp({ email, password, options }: { email: string; password: string; options?: { data?: Row } }) {
-    const r = await signUpFn({ data: { email, password, fullName: options?.data?.full_name } });
+  async signUp({ email, password, options }: { email: string; password: string; options?: { data?: Row; hints?: { honeypot?: string; elapsedMs?: number } } }) {
+    const r = await signUpFn({ data: { email, password, fullName: options?.data?.full_name, hints: options?.hints } });
     if (r.user) notify("SIGNED_IN", r.user);
     return { data: { user: r.user, session: asSession(r.user), needsVerification: r.needsVerification ?? false }, error: authErr(r.error) };
   },

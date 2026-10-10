@@ -18,6 +18,9 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  // Anti-bot hints (checked server-side): hidden honeypot field and form open time.
+  const [honeypot, setHoneypot] = useState("");
+  const [openedAt] = useState(() => Date.now());
 
   // Show errors returned from Google/GitHub sign-in.
   useEffect(() => {
@@ -43,7 +46,8 @@ const Auth = () => {
           password,
           options: {
             emailRedirectTo: window.location.origin,
-          },
+            hints: { honeypot, elapsedMs: Date.now() - openedAt },
+          } as any,
         });
         if (error) throw error;
         if ((signUpData as any)?.needsVerification) {

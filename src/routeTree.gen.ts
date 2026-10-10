@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as EnterpriseRouteImport } from './routes/enterprise'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as GettingStartedRouteImport } from './routes/getting-started'
 import { Route as LoginRouteImport } from './routes/login'
@@ -51,6 +52,9 @@ import { Route as AppVideosRouteImport } from './routes/app.videos'
 import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
 import { Route as DocsPrivacyPolicyRouteImport } from './routes/docs.privacy-policy'
 import { Route as DocsTermsConditionsRouteImport } from './routes/docs.terms-conditions'
+import { Route as EnterpriseEmailRouteImport } from './routes/enterprise.email'
+import { Route as EnterpriseGettingStartedRouteImport } from './routes/enterprise.getting-started'
+import { Route as EnterpriseVerifyRouteImport } from './routes/enterprise.verify'
 import { Route as GithubCallbackRouteImport } from './routes/github.callback'
 import { Route as GoogleCallbackRouteImport } from './routes/google.callback'
 import { Route as ApiAuthProviderRouteImport } from './routes/api/auth.$provider'
@@ -69,6 +73,11 @@ const AdminRoute = AdminRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnterpriseRoute = EnterpriseRouteImport.update({
+  id: '/enterprise',
+  path: '/enterprise',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -266,6 +275,22 @@ const DocsTermsConditionsRoute = DocsTermsConditionsRouteImport.update({
   path: '/docs/terms-conditions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnterpriseEmailRoute = EnterpriseEmailRouteImport.update({
+  id: '/email',
+  path: '/email',
+  getParentRoute: () => EnterpriseRoute,
+} as any)
+const EnterpriseGettingStartedRoute =
+  EnterpriseGettingStartedRouteImport.update({
+    id: '/getting-started',
+    path: '/getting-started',
+    getParentRoute: () => EnterpriseRoute,
+  } as any)
+const EnterpriseVerifyRoute = EnterpriseVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => EnterpriseRoute,
+} as any)
 const GithubCallbackRoute = GithubCallbackRouteImport.update({
   id: '/github/callback',
   path: '/github/callback',
@@ -291,6 +316,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/enterprise': typeof EnterpriseRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/getting-started': typeof GettingStartedRoute
   '/login': typeof LoginRoute
@@ -329,6 +355,9 @@ export interface FileRoutesByFullPath {
   '/auth/verify': typeof AuthVerifyRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
+  '/enterprise/email': typeof EnterpriseEmailRoute
+  '/enterprise/getting-started': typeof EnterpriseGettingStartedRoute
+  '/enterprise/verify': typeof EnterpriseVerifyRoute
   '/github/callback': typeof GithubCallbackRoute
   '/google/callback': typeof GoogleCallbackRoute
   '/admin/': typeof AdminIndexRoute
@@ -338,6 +367,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/enterprise': typeof EnterpriseRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/getting-started': typeof GettingStartedRoute
   '/login': typeof LoginRoute
@@ -376,6 +406,9 @@ export interface FileRoutesByTo {
   '/auth/verify': typeof AuthVerifyRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
+  '/enterprise/email': typeof EnterpriseEmailRoute
+  '/enterprise/getting-started': typeof EnterpriseGettingStartedRoute
+  '/enterprise/verify': typeof EnterpriseVerifyRoute
   '/github/callback': typeof GithubCallbackRoute
   '/google/callback': typeof GoogleCallbackRoute
   '/admin': typeof AdminIndexRoute
@@ -387,6 +420,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/enterprise': typeof EnterpriseRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/getting-started': typeof GettingStartedRoute
   '/login': typeof LoginRoute
@@ -425,6 +459,9 @@ export interface FileRoutesById {
   '/auth/verify': typeof AuthVerifyRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
+  '/enterprise/email': typeof EnterpriseEmailRoute
+  '/enterprise/getting-started': typeof EnterpriseGettingStartedRoute
+  '/enterprise/verify': typeof EnterpriseVerifyRoute
   '/github/callback': typeof GithubCallbackRoute
   '/google/callback': typeof GoogleCallbackRoute
   '/admin/': typeof AdminIndexRoute
@@ -437,6 +474,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/enterprise'
     | '/forgot-password'
     | '/getting-started'
     | '/login'
@@ -475,6 +513,9 @@ export interface FileRouteTypes {
     | '/auth/verify'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
+    | '/enterprise/email'
+    | '/enterprise/getting-started'
+    | '/enterprise/verify'
     | '/github/callback'
     | '/google/callback'
     | '/admin/'
@@ -484,6 +525,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/enterprise'
     | '/forgot-password'
     | '/getting-started'
     | '/login'
@@ -522,6 +564,9 @@ export interface FileRouteTypes {
     | '/auth/verify'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
+    | '/enterprise/email'
+    | '/enterprise/getting-started'
+    | '/enterprise/verify'
     | '/github/callback'
     | '/google/callback'
     | '/admin'
@@ -532,6 +577,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/enterprise'
     | '/forgot-password'
     | '/getting-started'
     | '/login'
@@ -570,6 +616,9 @@ export interface FileRouteTypes {
     | '/auth/verify'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
+    | '/enterprise/email'
+    | '/enterprise/getting-started'
+    | '/enterprise/verify'
     | '/github/callback'
     | '/google/callback'
     | '/admin/'
@@ -581,6 +630,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  EnterpriseRoute: typeof EnterpriseRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GettingStartedRoute: typeof GettingStartedRoute
   LoginRoute: typeof LoginRoute
@@ -632,6 +682,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enterprise': {
+      id: '/enterprise'
+      path: '/enterprise'
+      fullPath: '/enterprise'
+      preLoaderRoute: typeof EnterpriseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -907,6 +964,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsTermsConditionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/enterprise/email': {
+      id: '/enterprise/email'
+      path: '/email'
+      fullPath: '/enterprise/email'
+      preLoaderRoute: typeof EnterpriseEmailRouteImport
+      parentRoute: typeof EnterpriseRoute
+    }
+    '/enterprise/getting-started': {
+      id: '/enterprise/getting-started'
+      path: '/getting-started'
+      fullPath: '/enterprise/getting-started'
+      preLoaderRoute: typeof EnterpriseGettingStartedRouteImport
+      parentRoute: typeof EnterpriseRoute
+    }
+    '/enterprise/verify': {
+      id: '/enterprise/verify'
+      path: '/verify'
+      fullPath: '/enterprise/verify'
+      preLoaderRoute: typeof EnterpriseVerifyRouteImport
+      parentRoute: typeof EnterpriseRoute
+    }
     '/github/callback': {
       id: '/github/callback'
       path: '/github/callback'
@@ -984,10 +1062,27 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface EnterpriseRouteChildren {
+  EnterpriseEmailRoute: typeof EnterpriseEmailRoute
+  EnterpriseGettingStartedRoute: typeof EnterpriseGettingStartedRoute
+  EnterpriseVerifyRoute: typeof EnterpriseVerifyRoute
+}
+
+const EnterpriseRouteChildren: EnterpriseRouteChildren = {
+  EnterpriseEmailRoute: EnterpriseEmailRoute,
+  EnterpriseGettingStartedRoute: EnterpriseGettingStartedRoute,
+  EnterpriseVerifyRoute: EnterpriseVerifyRoute,
+}
+
+const EnterpriseRouteWithChildren = EnterpriseRoute._addFileChildren(
+  EnterpriseRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  EnterpriseRoute: EnterpriseRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   GettingStartedRoute: GettingStartedRoute,
   LoginRoute: LoginRoute,

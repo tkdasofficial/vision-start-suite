@@ -79,14 +79,19 @@ export async function start(rawName: unknown, rawDomain: unknown): Promise<Enter
   const token = randomToken(32);
   const now = nowSec();
   const status = known ? "domain_verified" : "pending";
+  const challenge = `vision-verify=${randomToken(16)}`;
   await d1(
     "INSERT INTO enterprise_attempts (id, token_hash, enterprise_name, domain, challenge, status, checks, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)",
-    [crypto.randomUUID(), await sha256(token), known?.enterprise_name ?? name, domain, `vision-verify=${randomToken(16)}`, status, now, now + ATTEMPT_TTL],
+    [crypto.randomUUID(), await sha256(token), known?.enterprise_name ?? name, domain, challenge, status, now, now + ATTEMPT_TTL],
   );
   setCookie(ATTEMPT_COOKIE, token, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: ATTEMPT_TTL });
   await audit(d1Store, { type: "enterprise.start", details: { domain, nameMatch: report.nameMatch, https: report.https, known: !!known } });
   if (Math.random() < 0.05) await d1("DELETE FROM enterprise_attempts WHERE expires_at < ?", [now]);
-  return { ...(await getState()), report };
+  // The cookie was just set on the response, so build the state directly.
+  const ename = known?.enterprise_name ?? name;
+  return status === "pending"
+    ? { step: "domain", enterpriseName: ename, domain, txtName: txtRecordName(domain), txtValue: challenge, report }
+    : { step: "email", enterpriseName: ename, domain, report };
 }
 
 /** Step 1b: check the TXT record directly via DNS. */

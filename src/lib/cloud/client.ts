@@ -175,3 +175,11 @@ export const supabase: any = {
 
 export type LocalUser = { id: string; email: string; created_at: string; user_metadata: Row; app_metadata: Row };
 export type LocalSession = { user: LocalUser; access_token: string; token_type: string };
+
+/** Re-reads the signed-in user from the server (after a sign-in that happened outside `auth`, e.g. Enterprise Login). */
+export async function emitAuthRefresh() {
+  try {
+    const r = await getCurrentUser();
+    notify(r.user ? "SIGNED_IN" : "SIGNED_OUT", r.user ?? null);
+  } catch { /* ignore */ }
+}

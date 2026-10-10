@@ -235,6 +235,11 @@ const Auth = () => {
               ? "Sign up to start using Vision"
               : "Sign in to your Vision account"}
           </p>
+          {mode !== "forgot" && (
+            <button type="button" onClick={() => navigate("/enterprise")} className="text-sm text-foreground font-medium hover:underline focus-visible:underline outline-none">
+              Enterprise Login
+            </button>
+          )}
         </div>
 
         {mode !== "forgot" && (

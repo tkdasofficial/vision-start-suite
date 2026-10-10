@@ -371,9 +371,9 @@ const Auth = () => {
           <button
             type="button"
             onClick={() => navigate("/enterprise")}
-            className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
           >
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
             <span>Secure access for your business — <span className="font-medium text-foreground">Enterprise Login</span></span>
           </button>
         </div>

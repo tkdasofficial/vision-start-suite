@@ -5,7 +5,8 @@
 - [x] Add applicable Library file-type filters.
 - [x] Update Projects header and add a separate creation page.
 - [x] Set AUTH_ORIGIN secret to https://vision-auth.tusharkantidasofficial.workers.dev
-- [ ] Wire Google/GitHub OAuth using saved GOOGLE_/GITHUB_ client secrets (verify env names match code)
-- [ ] Google Drive storage: upload files/assets to Drive folder with per-type sub-folders; store URLs in D1
-- [ ] SMTP via GOOGLE_APP_PASSWORD: 8-digit OTP verification, /auth/verify page
+- [x] Wire Google/GitHub OAuth using saved GOOGLE_/GITHUB_ client secrets (env names already matched)
+- [x] Google Drive storage: uploads go to Drive per-type sub-folders; records + links in D1 (user_files)
+- [x] SMTP via GOOGLE_APP_PASSWORD: 8-digit OTP verification, /auth/verify page, resend + rate limits
 - [ ] Point workers.dev proxy at the published app URL (needs app published)
+- [ ] End-to-end check of real Google/GitHub sign-in and a real file upload after publish

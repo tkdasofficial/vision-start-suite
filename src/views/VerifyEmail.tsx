@@ -21,7 +21,7 @@ const VerifyEmail = () => {
       const { error } = await supabase.auth.verifyEmailCode(email, code);
       if (error) throw error;
       toast({ title: "Email verified", description: "Welcome to Vision!" });
-      navigate("/app/new");
+      navigate("/getting-started");
     } catch (e: any) {
       toast({ title: "Invalid code", description: e.message, variant: "destructive" });
     } finally {

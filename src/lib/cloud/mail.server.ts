@@ -27,19 +27,58 @@ async function senderAddress(): Promise<string> {
 
 const b64 = (s: string) => btoa(Array.from(new TextEncoder().encode(s), (b) => String.fromCharCode(b)).join(""));
 
+type SmtpSocket = {
+  writer: WritableStreamDefaultWriter<Uint8Array>;
+  reader: ReadableStreamDefaultReader<Uint8Array>;
+  close: () => Promise<void> | void;
+};
+
+/** TLS socket to Gmail: Workers runtime uses cloudflare:sockets, dev uses node:tls. */
+async function openSmtpSocket(): Promise<SmtpSocket> {
+  const socketsModule = "cloudflare:sockets";
+  try {
+    const { connect } = await import(/* @vite-ignore */ socketsModule);
+    const socket = connect("smtp.gmail.com:465", { secureTransport: "on" });
+    return {
+      writer: socket.writable.getWriter(),
+      reader: socket.readable.getReader(),
+      close: () => socket.close(),
+    };
+  } catch {
+    const tlsModule = "node:tls";
+    const tls = await import(/* @vite-ignore */ tlsModule);
+    const sock = tls.connect(465, "smtp.gmail.com");
+    await new Promise<void>((resolve, reject) => {
+      sock.once("secureConnect", () => resolve());
+      sock.once("error", reject);
+    });
+    const readable = new ReadableStream<Uint8Array>({
+      start(c) {
+        sock.on("data", (d: Buffer) => c.enqueue(new Uint8Array(d)));
+        sock.on("end", () => c.close());
+        sock.on("error", (e: Error) => c.error(e));
+      },
+    });
+    const writable = new WritableStream<Uint8Array>({
+      write(chunk) {
+        return new Promise<void>((resolve, reject) =>
+          sock.write(chunk, (e?: Error | null) => (e ? reject(e) : resolve())),
+        );
+      },
+    });
+    return { writer: writable.getWriter(), reader: readable.getReader(), close: () => sock.end() };
+  }
+}
+
 /** Minimal SMTP client over a TLS socket. */
 export async function sendMail(to: string, subject: string, text: string) {
   const password = process.env.GOOGLE_APP_PASSWORD;
   if (!password) throw new Error("Email is not configured");
   const from = await senderAddress();
 
-  // Available only in the Workers runtime; the variable specifier keeps it
-  // out of bundler/test static analysis.
-  const socketsModule = "cloudflare:sockets";
-  const { connect } = await import(/* @vite-ignore */ socketsModule);
-  const socket = connect("smtp.gmail.com:465", { secureTransport: "on" });
-  const writer = socket.writable.getWriter();
-  const reader = socket.readable.getReader();
+  const socket = await openSmtpSocket();
+  const writer = socket.writer;
+  const reader = socket.reader;
   const dec = new TextDecoder();
   let buf = "";
 

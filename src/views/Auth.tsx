@@ -312,18 +312,31 @@ const Auth = () => {
           />
 
           <div className="space-y-1.5">
-            <label htmlFor="auth-email" className="text-sm font-medium text-foreground">Email</label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="auth-email" className="text-sm font-medium text-foreground">Email</label>
+              {step === "password" && mode !== "forgot" && (
+                <button
+                  type="button"
+                  onClick={() => { setStep("email"); setPassword(""); }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Change
+                </button>
+              )}
+            </div>
             <input
               id="auth-email"
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-full border border-border bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-foreground/30 transition-colors"
+              onKeyDown={(e) => e.key === "Enter" && (step === "email" || mode === "forgot") && handleEmailContinue()}
+              readOnly={step === "password" && mode !== "forgot"}
+              className={`w-full px-4 py-3 rounded-full border border-border bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-foreground/30 transition-colors ${step === "password" && mode !== "forgot" ? "opacity-70" : ""}`}
             />
           </div>
 
-          {mode !== "forgot" && (
+          {mode !== "forgot" && step === "password" && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label htmlFor="auth-password" className="text-sm font-medium text-foreground">Password</label>

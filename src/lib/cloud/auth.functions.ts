@@ -170,6 +170,9 @@ export const requestPasswordResetFn = createServerFn({ method: "POST" })
     const row: any = (await d1("SELECT u.id, p.is_banned FROM auth_users u LEFT JOIN profiles p ON p.id = u.id WHERE u.email = ?", [email]))[0];
     // Same answer whether or not the account exists, so emails can't be probed.
     if (!row || row.is_banned) return { ok: true, error: null };
+    // Enterprise accounts are passwordless; they sign in through Enterprise Login only.
+    const ent = (await d1("SELECT 1 FROM enterprise_members WHERE user_id = ?", [row.id]))[0];
+    if (ent) return { ok: true, error: null };
     try {
       const { sendOtp } = await import("./otp.server");
       await sendOtp(email, "reset");

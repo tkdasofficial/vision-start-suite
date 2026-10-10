@@ -46,6 +46,7 @@ import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSupportRouteImport } from './routes/app.support'
 import { Route as AppUpgradeRouteImport } from './routes/app.upgrade'
 import { Route as AppVideosRouteImport } from './routes/app.videos'
+import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
 import { Route as DocsPrivacyPolicyRouteImport } from './routes/docs.privacy-policy'
 import { Route as DocsTermsConditionsRouteImport } from './routes/docs.terms-conditions'
 import { Route as GithubCallbackRouteImport } from './routes/github.callback'
@@ -238,6 +239,11 @@ const AppVideosRoute = AppVideosRouteImport.update({
   path: '/app/videos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthVerifyRoute = AuthVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => AuthRoute,
+} as any)
 const DocsPrivacyPolicyRoute = DocsPrivacyPolicyRouteImport.update({
   id: '/docs/privacy-policy',
   path: '/docs/privacy-policy',
@@ -272,7 +278,7 @@ const AppChatChatIdRoute = AppChatChatIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -306,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
   '/app/videos': typeof AppVideosRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
   '/github/callback': typeof GithubCallbackRoute
@@ -316,7 +323,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -350,6 +357,7 @@ export interface FileRoutesByTo {
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
   '/app/videos': typeof AppVideosRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
   '/github/callback': typeof GithubCallbackRoute
@@ -362,7 +370,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -396,6 +404,7 @@ export interface FileRoutesById {
   '/app/support': typeof AppSupportRoute
   '/app/upgrade': typeof AppUpgradeRoute
   '/app/videos': typeof AppVideosRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/docs/privacy-policy': typeof DocsPrivacyPolicyRoute
   '/docs/terms-conditions': typeof DocsTermsConditionsRoute
   '/github/callback': typeof GithubCallbackRoute
@@ -443,6 +452,7 @@ export interface FileRouteTypes {
     | '/app/support'
     | '/app/upgrade'
     | '/app/videos'
+    | '/auth/verify'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
     | '/github/callback'
@@ -487,6 +497,7 @@ export interface FileRouteTypes {
     | '/app/support'
     | '/app/upgrade'
     | '/app/videos'
+    | '/auth/verify'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
     | '/github/callback'
@@ -532,6 +543,7 @@ export interface FileRouteTypes {
     | '/app/support'
     | '/app/upgrade'
     | '/app/videos'
+    | '/auth/verify'
     | '/docs/privacy-policy'
     | '/docs/terms-conditions'
     | '/github/callback'
@@ -544,7 +556,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -834,6 +846,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVideosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/verify': {
+      id: '/auth/verify'
+      path: '/verify'
+      fullPath: '/auth/verify'
+      preLoaderRoute: typeof AuthVerifyRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/docs/privacy-policy': {
       id: '/docs/privacy-policy'
       path: '/docs/privacy-policy'
@@ -915,10 +934,20 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface AuthRouteChildren {
+  AuthVerifyRoute: typeof AuthVerifyRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthVerifyRoute: AuthVerifyRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,

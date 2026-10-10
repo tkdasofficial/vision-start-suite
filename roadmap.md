@@ -2,12 +2,10 @@
 - [x] Rename all visible branding to Vision.
 - [x] Add Images, Videos, Library, Projects, and Integrations sidebar pages.
 - [x] Add creation-only workspaces with eight square scrollable references.
-- [x] Keep existing browser-only limitations explicit for generation and service connections.
-- [x] Verify navigation, reference submission, and project actions.
 - [x] Add applicable Library file-type filters.
-- [x] Update Projects header and add a separate creation page with optional icon, name, and category.
-- [x] Verify filters, creation, persistence, and small-screen layout.
-- [ ] Cloudflare sign-in: user pastes Team Domain, Client ID, Client Secret into secure form (blocked on user)
-- [ ] Cloudflare sign-in auto-setup: rerun /tmp/cf-setup.mjs after user adds "Access: Apps and Policies (Edit)" to their API token (blocked on user)
-- [ ] Point workers.dev proxy at the published app URL (needs app published; preview is login-gated so proxy returns 401 until then)
-- [x] Set AUTH_ORIGIN secret to https://vision-auth.vision-app-auth.workers.dev
+- [x] Update Projects header and add a separate creation page.
+- [x] Set AUTH_ORIGIN secret to https://vision-auth.tusharkantidasofficial.workers.dev
+- [ ] Wire Google/GitHub OAuth using saved GOOGLE_/GITHUB_ client secrets (verify env names match code)
+- [ ] Google Drive storage: upload files/assets to Drive folder with per-type sub-folders; store URLs in D1
+- [ ] SMTP via GOOGLE_APP_PASSWORD: 8-digit OTP verification, /auth/verify page
+- [ ] Point workers.dev proxy at the published app URL (needs app published)

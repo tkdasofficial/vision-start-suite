@@ -7,7 +7,7 @@ import { d1 } from "./d1.server";
 import { createUser, randomToken, startSession } from "./auth.server";
 import { providerCallbackUrl, type OAuthProvider } from "./oauth-urls";
 
-export type Provider = "google" | "github" | "cloudflare";
+export type Provider = OAuthProvider;
 const STATE_COOKIE = "vision_oauth_state";
 
 const cfg = (p: Provider) => {
@@ -22,7 +22,6 @@ const cfg = (p: Provider) => {
 
 const label = (p: Provider) => (p === "google" ? "Google" : p === "github" ? "GitHub" : "Cloudflare");
 
-export const providerCallbackUrl = (base: string, p: Provider) => `${base.replace(/\/+$/, "")}/${p}/callback`;
 const redirectUri = (req: Request, p: Provider) =>
   providerCallbackUrl(process.env.AUTH_ORIGIN || new URL(req.url).origin, p);
 const back = (req: Request, path: string) => Response.redirect(new URL(path, req.url).toString(), 302);

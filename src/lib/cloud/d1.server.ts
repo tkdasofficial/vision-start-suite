@@ -1,5 +1,5 @@
 // Server-only access to the Vision database on Cloudflare D1 (via the Cloudflare API).
-const DATABASE_ID = "60c2e0fe-89c3-4a68-a723-be5bc4e8e4f8";
+const DATABASE_ID = "ded73090-4d47-45ac-952f-24ae2beaba5f";
 
 export async function d1<T = Record<string, any>>(sql: string, params: unknown[] = []): Promise<T[]> {
   const account = process.env["CLOUDFLARE_ACCOUNT_ID"];

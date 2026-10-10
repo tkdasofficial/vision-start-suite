@@ -60,18 +60,18 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
-          <img src={logo} alt="Vision" className="h-12 w-12 mb-4" />
-          <h1 className="text-2xl font-semibold text-foreground">{isReset ? "Reset your password" : "Verify your email"}</h1>
-          <p className="text-sm text-muted-foreground mt-2 text-center">
+    <div className="min-h-[100dvh] bg-background flex flex-col px-6 py-10 sm:py-14">
+      <div className="w-full max-w-sm mx-auto flex-1 flex flex-col justify-center gap-8">
+        <div className="space-y-2">
+          <img src={logo} alt="Vision" className="w-12 h-12 rounded-2xl" />
+          <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-foreground pt-4">{isReset ? "Reset your password" : "Verify your email"}</h1>
+          <p className="text-sm text-muted-foreground">
             We sent an 8-digit code to <span className="font-medium text-foreground">{email}</span>
           </p>
         </div>
 
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-          <div className="flex justify-center mb-6" data-testid="otp-input">
+        <div className="space-y-5">
+          <div className="flex justify-center" data-testid="otp-input">
             <InputOTP maxLength={8} value={code} onChange={setCode}>
               <InputOTPGroup>
                 {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
@@ -82,30 +82,30 @@ const VerifyEmail = () => {
           </div>
 
           {isReset && (
-            <div className="space-y-3 mb-5">
+            <div className="space-y-3">
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type={show ? "text" : "password"}
                   placeholder="New password (min 8 characters)"
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-11 pl-10 pr-10 rounded-xl bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full pl-11 pr-11 py-3 rounded-full border border-border bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-foreground/30 transition-colors"
                 />
-                <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? "Hide password" : "Show password"} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type={show ? "text" : "password"}
                   placeholder="Confirm new password"
                   autoComplete="new-password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  className="w-full h-11 pl-10 pr-3 rounded-xl bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full pl-11 pr-4 py-3 rounded-full border border-border bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-foreground/30 transition-colors"
                 />
               </div>
               {mismatch && <p className="text-xs text-destructive">Passwords don't match.</p>}
@@ -115,23 +115,23 @@ const VerifyEmail = () => {
           <button
             onClick={handleVerify}
             disabled={loading || !canSubmit}
-            className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-medium flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
+            className="w-full py-3 rounded-full bg-foreground text-background text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 hover:opacity-90 transition-opacity"
           >
             <ShieldCheck className="h-4 w-4" />
             {loading ? (isReset ? "Updating…" : "Verifying…") : isReset ? "Reset password & sign in" : "Verify email"}
           </button>
 
-          <div className="flex items-center justify-between mt-4 text-sm">
+          <div className="flex items-center justify-between text-sm">
             <button
               onClick={() => navigate("/login")}
-              className="text-muted-foreground hover:text-foreground flex items-center gap-1"
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
             </button>
             <button
               onClick={handleResend}
               disabled={resending}
-              className="text-primary hover:underline disabled:opacity-50 flex items-center gap-1"
+              className="text-foreground font-medium hover:underline disabled:opacity-50 flex items-center gap-1"
             >
               <Mail className="h-3.5 w-3.5" /> {resending ? "Sending…" : "Resend code"}
             </button>

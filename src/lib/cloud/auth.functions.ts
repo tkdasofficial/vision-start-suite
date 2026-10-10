@@ -153,6 +153,70 @@ export const signInFn = createServerFn({ method: "POST" })
     return { user: a.toPublicUser(row), error: null };
   });
 
+export const requestPasswordResetFn = createServerFn({ method: "POST" })
+  .inputValidator((d: { email: string }) => d)
+  .handler(async ({ data }) => {
+    const { d1 } = await import("./d1.server");
+    const S = await sec();
+    const email = S.normalizeEmail(data?.email);
+    if (!S.isValidEmail(email)) return { ok: false, error: "Enter a valid email address." };
+    const facts = S.currentFacts();
+    try { S.assertSameOrigin(facts); } catch (e: any) { return { ok: false, error: e.message }; }
+    const keys = await S.keysFor(facts, email);
+    const L = S.SECURITY_CONFIG.limits;
+    try {
+      await S.enforceLimits(S.d1Store, [[`pwreset:email:${keys.emailKey}`, L.otpResendPerEmail], [keys.ipKey && `pwreset:ip:${keys.ipKey}`, L.otpResendPerIp]]);
+    } catch (e: any) { return { ok: false, error: e.message }; }
+    const row: any = (await d1("SELECT u.id, p.is_banned FROM auth_users u LEFT JOIN profiles p ON p.id = u.id WHERE u.email = ?", [email]))[0];
+    // Same answer whether or not the account exists, so emails can't be probed.
+    if (!row || row.is_banned) return { ok: true, error: null };
+    try {
+      const { sendOtp } = await import("./otp.server");
+      await sendOtp(email, "reset");
+    } catch (e) {
+      console.error("[pwreset] send failed", (e as Error).message);
+      return { ok: false, error: "Couldn't send the email. Please try again in a moment." };
+    }
+    await S.audit(S.d1Store, { type: "password.reset_requested", subject: keys.emailKey });
+    return { ok: true, error: null };
+  });
+
+export const resetPasswordFn = createServerFn({ method: "POST" })
+  .inputValidator((d: { email: string; code: string; password: string }) => d)
+  .handler(async ({ data }): Promise<AuthResult> => {
+    const a = await import("./auth.server");
+    const { d1 } = await import("./d1.server");
+    const S = await sec();
+    const email = S.normalizeEmail(data?.email);
+    const code = String(data?.code ?? "").trim();
+    const password = typeof data?.password === "string" ? data.password : "";
+    if (!S.isValidEmail(email) || !/^\d{8}$/.test(code)) return { user: null, error: "Enter the 8-digit code from your email." };
+    if (password.length < 8 || password.length > 128) return { user: null, error: "Password must be 8–128 characters." };
+    const facts = S.currentFacts();
+    try { S.assertSameOrigin(facts); } catch (e: any) { return { user: null, error: e.message }; }
+    const keys = await S.keysFor(facts, email);
+    const L = S.SECURITY_CONFIG.limits;
+    try {
+      await S.enforceLimits(S.d1Store, [[`otpv:email:${keys.emailKey}`, L.otpVerifyPerEmail], [keys.ipKey && `otpv:ip:${keys.ipKey}`, L.otpVerifyPerIp]]);
+    } catch (e: any) { return { user: null, error: e.message }; }
+    const { checkOtp } = await import("./otp.server");
+    if (!(await checkOtp(email, code, "reset"))) {
+      if (keys.ipKey) await S.d1Store.hit(`vfail:ip:${keys.ipKey}`, 3600, S.nowSec());
+      await S.audit(S.d1Store, { type: "password.reset_failed", decision: "DENY", subject: keys.emailKey });
+      return { user: null, error: "That code is incorrect or expired." };
+    }
+    const row: any = (await d1("SELECT u.*, p.is_banned FROM auth_users u LEFT JOIN profiles p ON p.id = u.id WHERE u.email = ?", [email]))[0];
+    if (!row) return { user: null, error: "That code is incorrect or expired." };
+    if (row.is_banned) return { user: null, error: "This account has been suspended." };
+    const salt = a.randomToken(16);
+    // The code proves email ownership: set the new password, mark verified, and sign out every other device.
+    await d1("UPDATE auth_users SET password_hash = ?, salt = ?, email_verified = 1 WHERE id = ?", [await a.hashPassword(password, salt), salt, row.id]);
+    await d1("DELETE FROM auth_sessions WHERE user_id = ?", [row.id]);
+    await S.audit(S.d1Store, { type: "password.reset_completed", decision: "ALLOW", subject: row.id });
+    await a.startSession(row.id);
+    return { user: a.toPublicUser(row), error: null };
+  });
+
 export const getCreditBalanceFn = createServerFn({ method: "GET" }).handler(async () => {
   const { getCaller } = await import("./auth.server");
   const c = await getCaller();

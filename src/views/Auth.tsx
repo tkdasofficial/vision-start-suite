@@ -38,8 +38,8 @@ const Auth = () => {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
-        toast({ title: "Check your email", description: "We sent you a password reset link." });
-        setMode("login");
+        toast({ title: "Check your email", description: "If an account exists, we sent an 8-digit reset code." });
+        navigate(`/auth/verify?email=${encodeURIComponent(email)}&mode=reset`);
       } else if (mode === "signup") {
         const { data: signUpData, error } = await supabase.auth.signUp({
           email,

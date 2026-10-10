@@ -132,7 +132,10 @@ export const signInFn = createServerFn({ method: "POST" })
       await S.enforceLimits(S.d1Store, [[`login:email:${keys.emailKey}`, L.loginPerEmail], [keys.ipKey && `login:ip:${keys.ipKey}`, L.loginPerIp]]);
     } catch (e: any) { return { user: null, error: e.message }; }
     const row: any = (await d1("SELECT u.*, p.is_banned FROM auth_users u LEFT JOIN profiles p ON p.id = u.id WHERE u.email = ?", [email]))[0];
-    const ok = row?.password_hash && (await a.verifyPassword(password, row.salt, row.password_hash));
+    // Always run the hash so response timing doesn't reveal whether the account exists.
+    const ok = row?.password_hash
+      ? await a.verifyPassword(password, row.salt, row.password_hash)
+      : (await a.hashPassword(password, "timing-equalizer"), false);
     if (!ok) {
       await S.audit(S.d1Store, { type: "login.failed", decision: "DENY", subject: keys.emailKey });
       return { user: null, error: "Invalid email or password." };
@@ -169,6 +172,8 @@ export const updateUserFn = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<AuthResult> => {
     const a = await import("./auth.server");
     const { d1 } = await import("./d1.server");
+    const S = await sec();
+    try { S.assertSameOrigin(S.currentFacts()); } catch (e: any) { return { user: null, error: e.message }; }
     const c = await a.getCaller();
     if (!c) return { user: null, error: "Please sign in to continue." };
     const row: any = (await d1("SELECT * FROM auth_users WHERE id = ?", [c.user.id]))[0];

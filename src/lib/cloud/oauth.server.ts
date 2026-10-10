@@ -5,6 +5,7 @@
 import { getCookie, setCookie, deleteCookie } from "@tanstack/react-start/server";
 import { d1 } from "./d1.server";
 import { createUser, randomToken, startSession } from "./auth.server";
+import { oauthLinkMustResetPassword } from "../../../security";
 import { providerCallbackUrl, type OAuthProvider } from "./oauth-urls";
 
 export type Provider = OAuthProvider;
@@ -86,7 +87,14 @@ export async function finishOAuth(req: Request, p: Provider) {
     let userId = (await d1<{ user_id: string }>("SELECT user_id FROM auth_identities WHERE provider = ? AND provider_user_id = ?", [p, prof.id]))[0]?.user_id;
     if (!userId) {
       // Link to an existing account with the same verified email, or create one.
-      userId = (await d1<{ id: string }>("SELECT id FROM auth_users WHERE email = ?", [prof.email]))[0]?.id;
+      const existing = (await d1<{ id: string; email_verified: number; password_hash: string | null }>("SELECT id, email_verified, password_hash FROM auth_users WHERE email = ?", [prof.email]))[0];
+      userId = existing?.id;
+      // Pre-hijack defense: an unverified password account was never proven to belong to this email's owner,
+      // so its password (possibly set by someone else) is discarded and its other sessions revoked.
+      if (existing && oauthLinkMustResetPassword(existing)) {
+        await d1("UPDATE auth_users SET password_hash = NULL, salt = NULL WHERE id = ?", [existing.id]);
+        await d1("DELETE FROM auth_sessions WHERE user_id = ?", [existing.id]);
+      }
       if (!userId) {
         // New account via OAuth: same signup abuse policy as the email form.
         const S = await import("./security.server");

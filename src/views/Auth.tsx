@@ -221,7 +221,22 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background flex items-center justify-center px-4">
+    <div className="relative min-h-[100dvh] bg-background flex items-center justify-center px-4 py-6">
+      {mode !== "forgot" && (
+        <div className="absolute right-4 top-4 flex items-center gap-2 sm:right-6 sm:top-5">
+          <span className="hidden text-xs text-muted-foreground sm:inline">Secure Access for Your Business</span>
+          <span className="hidden text-xs text-muted-foreground/40 sm:inline">·</span>
+          <button
+            type="button"
+            onClick={() => navigate("/enterprise")}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 opacity-70" />
+            Enterprise Login
+          </button>
+        </div>
+      )}
+
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-3">
           <img src={logo} alt="Vision" className="w-14 h-14 rounded-full" />
@@ -361,19 +376,6 @@ const Auth = () => {
             </button>
           )}
         </p>
-
-        {mode !== "forgot" && (
-          <p className="text-center text-xs text-muted-foreground">
-            Secure Access for Your Business{" "}
-            <button
-              type="button"
-              onClick={() => navigate("/enterprise")}
-              className="text-sm font-medium text-foreground hover:underline"
-            >
-              Enterprise Login
-            </button>
-          </p>
-        )}
 
       </div>
 

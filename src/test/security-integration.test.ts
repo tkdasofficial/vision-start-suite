@@ -72,6 +72,17 @@ describe("OTP (real SQL, isolated DB)", () => {
   });
 });
 
+describe("password reset codes", () => {
+  it("are separate from sign-up codes and single-use", async () => {
+    await sendOtp("r@example.com", "reset");
+    const code = lastCode();
+    expect(state.mail.at(-1)).toContain("password reset");
+    expect(await checkOtp("r@example.com", code, "verify")).toBe(false);
+    expect(await checkOtp("r@example.com", code, "reset")).toBe(true);
+    expect(await checkOtp("r@example.com", code, "reset")).toBe(false);
+  });
+});
+
 describe("sessions (real SQL, isolated DB)", () => {
   it("stores hashed tokens, rotates on sign-in, revokes on sign-out", async () => {
     const u = await createUser("s@example.com", { password: "password123" });

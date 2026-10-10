@@ -4,9 +4,9 @@ import { supabase } from "@/lib/cloud/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 
-const ORG_TYPES = ["Personal", "Startup", "Company", "Agency", "Education", "Non-profit", "Government"];
-const ORG_SIZES = ["Just me", "2–10", "11–50", "51–200", "201–1000", "1000+"];
-const ROLES = ["Founder / Owner", "Developer", "Designer", "Marketing", "Product", "Student", "Other"];
+import { ORG_TYPES as ALL_ORG_TYPES, ORG_SIZES, ROLES } from "@/lib/onboarding-options";
+
+const ORG_TYPES = ALL_ORG_TYPES.filter((t) => t !== "Enterprise");
 
 const STEPS = ["Personal information", "Organization", "Your role"] as const;
 

@@ -15,7 +15,7 @@ export function generateOtp(): string {
 const codeHash = (email: string, code: string) => pseudonym("otp", `${email}:${code}`);
 
 /** Creates and emails a fresh 8-digit code for the address (replaces any previous code). */
-export type OtpPurpose = "verify" | "reset";
+export type OtpPurpose = "verify" | "reset" | `enterprise:${string}`;
 // Each purpose gets its own row, so a sign-up code can never reset a password (and vice versa).
 const slot = (email: string, purpose: OtpPurpose) => (purpose === "verify" ? email : `${purpose}:${email}`);
 
@@ -30,10 +30,11 @@ export async function sendOtp(email: string, purpose: OtpPurpose = "verify") {
     [key, hash, expires, now],
   );
   const reset = purpose === "reset";
+  const ent = purpose.startsWith("enterprise:");
   await sendMail(
     email,
-    reset ? "Reset your Vision password" : "Your Vision verification code",
-    `Hi,\n\nYour Vision ${reset ? "password reset" : "verification"} code is:\n\n${code}\n\nIt expires in 10 minutes. If you didn't request this, you can ignore this email.\n\n— Vision`,
+    reset ? "Reset your Vision password" : ent ? "Your Vision Enterprise Login code" : "Your Vision verification code",
+    `Hi,\n\nYour Vision ${reset ? "password reset" : ent ? "Enterprise Login" : "verification"} code is:\n\n${code}\n\nIt expires in 10 minutes. If you didn't request this, you can ignore this email.\n\n— Vision`,
   );
 }
 

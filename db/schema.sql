@@ -49,3 +49,9 @@ CREATE INDEX IF NOT EXISTS security_events_created ON security_events(created_at
 CREATE TABLE IF NOT EXISTS credit_ledger (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, kind TEXT NOT NULL, amount INTEGER NOT NULL, idempotency_key TEXT NOT NULL UNIQUE, reason TEXT, created_at INTEGER NOT NULL);
 CREATE UNIQUE INDEX IF NOT EXISTS credit_ledger_one_initial ON credit_ledger(user_id) WHERE kind = 'initial_grant';
 CREATE INDEX IF NOT EXISTS credit_ledger_user ON credit_ledger(user_id);
+-- Enterprise Login (VISION BDI)
+CREATE TABLE IF NOT EXISTS enterprise_domains (domain TEXT PRIMARY KEY, enterprise_name TEXT NOT NULL, verified_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS enterprise_attempts (id TEXT PRIMARY KEY, token_hash TEXT NOT NULL UNIQUE, enterprise_name TEXT NOT NULL, domain TEXT NOT NULL, challenge TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', email TEXT, checks INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS enterprise_attempts_expires ON enterprise_attempts(expires_at);
+CREATE TABLE IF NOT EXISTS enterprise_members (user_id TEXT PRIMARY KEY, domain TEXT NOT NULL, email TEXT NOT NULL UNIQUE, enterprise_name TEXT NOT NULL, org_type TEXT NOT NULL DEFAULT 'Enterprise', company_size TEXT, role TEXT, business_phone TEXT, phone_verified INTEGER NOT NULL DEFAULT 0, street TEXT, city TEXT, region TEXT, postal_code TEXT, country TEXT, onboarded INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS enterprise_members_domain ON enterprise_members(domain);

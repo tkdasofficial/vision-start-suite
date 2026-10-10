@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-type AuthResult = { user: any | null; error: string | null };
+type AuthResult = { user: any | null; error: string | null; needsVerification?: boolean };
 
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(async () => {
   const { getCaller } = await import("./auth.server");
@@ -23,8 +23,52 @@ export const signUpFn = createServerFn({ method: "POST" })
     if (exists[0]) return { user: null, error: "An account with this email already exists." };
     const fullName = String(data.fullName ?? "").trim().slice(0, 100);
     const row = await a.createUser(email, { password, metadata: fullName ? { full_name: fullName } : {} });
+    try {
+      const { sendOtp } = await import("./otp.server");
+      await sendOtp(email);
+    } catch (e) {
+      console.error("[signup] otp send failed", e);
+      return { user: null, error: "Account created, but we couldn't send the verification email. Please try signing in to resend it." };
+    }
+    // Session starts only after the email code is verified.
+    return { user: null, error: null, needsVerification: true };
+  });
+
+export const verifyEmailFn = createServerFn({ method: "POST" })
+  .inputValidator((d: { email: string; code: string }) => d)
+  .handler(async ({ data }): Promise<AuthResult> => {
+    const a = await import("./auth.server");
+    const { d1 } = await import("./d1.server");
+    const email = String(data.email ?? "").trim().toLowerCase();
+    const code = String(data.code ?? "").trim();
+    if (!EMAIL.test(email) || !/^\d{8}$/.test(code)) return { user: null, error: "Enter the 8-digit code from your email." };
+    try { await a.rateLimit(`verify:${email}`, 10, 900); } catch (e: any) { return { user: null, error: e.message }; }
+    const { checkOtp } = await import("./otp.server");
+    if (!(await checkOtp(email, code))) return { user: null, error: "That code is incorrect or expired." };
+    const row: any = (await d1("SELECT * FROM auth_users WHERE email = ?", [email]))[0];
+    if (!row) return { user: null, error: "Account not found. Please sign up again." };
+    await d1("UPDATE auth_users SET email_verified = 1 WHERE id = ?", [row.id]);
     await a.startSession(row.id);
     return { user: a.toPublicUser(row), error: null };
+  });
+
+export const resendVerificationFn = createServerFn({ method: "POST" })
+  .inputValidator((d: { email: string }) => d)
+  .handler(async ({ data }) => {
+    const a = await import("./auth.server");
+    const { d1 } = await import("./d1.server");
+    const email = String(data.email ?? "").trim().toLowerCase();
+    try { await a.rateLimit(`resend:${email}`, 3, 900); } catch (e: any) { return { ok: false, error: e.message }; }
+    const row: any = (await d1("SELECT id, email_verified FROM auth_users WHERE email = ?", [email]))[0];
+    if (!row || row.email_verified) return { ok: true, error: null }; // don't reveal account state
+    try {
+      const { sendOtp } = await import("./otp.server");
+      await sendOtp(email);
+      return { ok: true, error: null };
+    } catch (e) {
+      console.error("[resend] otp send failed", e);
+      return { ok: false, error: "Couldn't send the email. Please try again in a moment." };
+    }
   });
 
 export const signInFn = createServerFn({ method: "POST" })
@@ -38,6 +82,13 @@ export const signInFn = createServerFn({ method: "POST" })
     const ok = row?.password_hash && (await a.verifyPassword(String(data.password ?? ""), row.salt, row.password_hash));
     if (!ok) return { user: null, error: "Invalid email or password." };
     if (row.is_banned) return { user: null, error: "This account has been suspended." };
+    if (!row.email_verified) {
+      try {
+        const { sendOtp } = await import("./otp.server");
+        await sendOtp(email);
+      } catch (e) { console.error("[signin] otp send failed", e); }
+      return { user: null, error: null, needsVerification: true };
+    }
     await a.startSession(row.id);
     return { user: a.toPublicUser(row), error: null };
   });

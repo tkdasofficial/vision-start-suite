@@ -86,6 +86,8 @@ export async function finishOAuth(req: Request, p: Provider) {
       if (!userId) userId = (await createUser(prof.email, { metadata: { full_name: prof.name, avatar_url: prof.avatar } })).id;
       await d1("INSERT OR IGNORE INTO auth_identities (provider, provider_user_id, user_id) VALUES (?, ?, ?)", [p, prof.id, userId]);
     }
+    // Provider-verified email — no code needed.
+    await d1("UPDATE auth_users SET email_verified = 1 WHERE id = ?", [userId]);
     const banned = (await d1<{ is_banned: number }>("SELECT is_banned FROM profiles WHERE id = ?", [userId]))[0]?.is_banned;
     if (banned) return back(req, "/login?error=" + encodeURIComponent("This account has been suspended."));
     await startSession(userId!);

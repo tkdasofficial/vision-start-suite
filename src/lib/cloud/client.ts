@@ -1,7 +1,7 @@
 // Browser-side data client. Every request runs on the server, which checks the
 // signed-in user and only touches rows they're allowed to.
 import { runDataQuery } from "./data.functions";
-import { getCurrentUser, signInFn, signOutFn, signUpFn, updateUserFn } from "./auth.functions";
+import { getCurrentUser, signInFn, signOutFn, signUpFn, updateUserFn, verifyEmailFn, resendVerificationFn } from "./auth.functions";
 import type { QueryFilter, QueryResult, QuerySpec } from "./query-types";
 
 type Row = Record<string, any>;
@@ -83,12 +83,21 @@ const auth = {
   async signUp({ email, password, options }: { email: string; password: string; options?: { data?: Row } }) {
     const r = await signUpFn({ data: { email, password, fullName: options?.data?.full_name } });
     if (r.user) notify("SIGNED_IN", r.user);
-    return { data: { user: r.user, session: asSession(r.user) }, error: authErr(r.error) };
+    return { data: { user: r.user, session: asSession(r.user), needsVerification: r.needsVerification ?? false }, error: authErr(r.error) };
   },
   async signInWithPassword({ email, password }: { email: string; password: string }) {
     const r = await signInFn({ data: { email, password } });
     if (r.user) notify("SIGNED_IN", r.user);
-    return { data: { user: r.user, session: asSession(r.user) }, error: authErr(r.error) };
+    return { data: { user: r.user, session: asSession(r.user), needsVerification: r.needsVerification ?? false }, error: authErr(r.error) };
+  },
+  async verifyEmailCode(email: string, code: string) {
+    const r = await verifyEmailFn({ data: { email, code } });
+    if (r.user) notify("SIGNED_IN", r.user);
+    return { data: { user: r.user }, error: authErr(r.error) };
+  },
+  async resendVerificationCode(email: string) {
+    const r = await resendVerificationFn({ data: { email } });
+    return { error: authErr(r.error ?? null) };
   },
   async signInWithOAuth({ provider }: { provider: "google" | "github" }) {
     window.location.href = `/api/auth/${provider}`;

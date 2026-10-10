@@ -39,7 +39,7 @@ const Auth = () => {
         toast({ title: "Check your email", description: "We sent you a password reset link." });
         setMode("login");
       } else if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,12 +48,22 @@ const Auth = () => {
           },
         });
         if (error) throw error;
+        if ((signUpData as any)?.needsVerification) {
+          toast({ title: "Check your email", description: "We sent you an 8-digit verification code." });
+          navigate(`/auth/verify?email=${encodeURIComponent(email)}`);
+          return;
+        }
         toast({ title: "Account created", description: "Welcome to Vision!" });
         navigate("/app/new");
       } else {
         // Login flow
         const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        if ((signInData as any)?.needsVerification) {
+          toast({ title: "Verify your email", description: "We sent you an 8-digit verification code." });
+          navigate(`/auth/verify?email=${encodeURIComponent(email)}`);
+          return;
+        }
 
         // Check 2FA method
         const { data: twoFAMethod } = await supabase.rpc("check_2fa_by_email", { _email: email });

@@ -9,3 +9,5 @@
 - [x] Verify filters, creation, persistence, and small-screen layout.
 - [ ] Cloudflare sign-in: user pastes Team Domain, Client ID, Client Secret into secure form (blocked on user)
 - [ ] Cloudflare sign-in auto-setup: rerun /tmp/cf-setup.mjs after user adds "Access: Apps and Policies (Edit)" to their API token (blocked on user)
+- [ ] Point workers.dev proxy at the published app URL (needs app published; preview is login-gated so proxy returns 401 until then)
+- [ ] Set AUTH_ORIGIN secret to https://vision-auth.vision-app-auth.workers.dev

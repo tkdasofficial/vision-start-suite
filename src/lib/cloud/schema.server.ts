@@ -279,6 +279,20 @@ export const TABLES: Record<string, { key: string; cols: Record<string, ColKind>
    "user_id": "text"
   }
  },
+ "user_files": {
+  "key": "id",
+  "cols": {
+   "id": "text",
+   "user_id": "text",
+   "name": "text",
+   "mime": "text",
+   "kind": "text",
+   "size": "num",
+   "drive_file_id": "text",
+   "url": "text",
+   "created_at": "text"
+  }
+ },
  "workspace_projects": {
   "key": "id",
   "cols": {

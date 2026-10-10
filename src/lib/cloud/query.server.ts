@@ -20,6 +20,9 @@ const POLICIES: Record<string, Policy> = {
   user_2fa: { read: "owner", write: "owner" },
   user_settings: { read: "owner", write: "owner" },
   workspace_projects: { read: "owner", write: "owner" },
+  // File records are readable by their owner; writes happen only through the
+  // Drive-backed upload route, never directly from the browser.
+  user_files: { read: "owner", write: "admin" },
   subscriptions: { read: "owner", write: "admin" },
   user_roles: { read: "owner", write: "admin" },
   profiles: { read: "self", write: "self" },

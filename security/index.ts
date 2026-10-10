@@ -14,3 +14,4 @@ export { isRestricted, restrict } from "./enforcement/restrictions";
 export { grantInitialCredits } from "./credits/initial-credit-grant";
 export { evaluateSignup, recordAccountCreated } from "./core/signup-pipeline";
 export type { SignupKeys, SignupVerdict } from "./core/signup-pipeline";
+export * from "./identity/domain-verification";

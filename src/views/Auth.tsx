@@ -362,19 +362,6 @@ const Auth = () => {
           )}
         </p>
 
-        {mode !== "forgot" && (
-          <p className="text-center text-xs text-muted-foreground">
-            Secure Access for Your Business{" "}
-            <button
-              type="button"
-              onClick={() => navigate("/enterprise")}
-              className="text-sm font-medium text-foreground hover:underline"
-            >
-              Enterprise Login
-            </button>
-          </p>
-        )}
-
       </div>
 
     </div>

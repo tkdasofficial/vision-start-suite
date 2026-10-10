@@ -226,7 +226,7 @@ const Auth = () => {
         </div>
 
         {mode !== "forgot" && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => handleOAuth("google")}
               className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card text-sm font-medium text-foreground hover:bg-accent transition-colors"

@@ -119,7 +119,7 @@ export const updateUserFn = createServerFn({ method: "POST" })
     }
     if (data.data && typeof data.data === "object") {
       const allowed: Record<string, any> = {};
-      for (const k of ["full_name", "avatar_url"]) if (k in data.data) allowed[k] = String(data.data[k] ?? "").slice(0, 500);
+      for (const k of ["full_name", "avatar_url", "phone", "address", "org_type", "org_size", "role", "onboarded"]) if (k in data.data) allowed[k] = String(data.data[k] ?? "").slice(0, 500);
       let meta: Record<string, any> = {};
       try { meta = JSON.parse(row.user_metadata || "{}"); } catch { /* ignore */ }
       await d1("UPDATE auth_users SET user_metadata = ? WHERE id = ?", [JSON.stringify({ ...meta, ...allowed }), c.user.id]);

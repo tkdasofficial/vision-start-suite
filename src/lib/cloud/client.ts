@@ -1,7 +1,7 @@
 // Browser-side data client. Every request runs on the server, which checks the
 // signed-in user and only touches rows they're allowed to.
 import { runDataQuery } from "./data.functions";
-import { getCurrentUser, signInFn, signOutFn, signUpFn, updateUserFn, verifyEmailFn, resendVerificationFn } from "./auth.functions";
+import { getCurrentUser, signInFn, signOutFn, signUpFn, updateUserFn, verifyEmailFn, resendVerificationFn, requestPasswordResetFn, resetPasswordFn } from "./auth.functions";
 import type { QueryFilter, QueryResult, QuerySpec } from "./query-types";
 
 type Row = Record<string, any>;
@@ -116,7 +116,15 @@ const auth = {
     loadUser().then((u) => cb("INITIAL_SESSION", asSession(u)));
     return { data: { subscription: { unsubscribe: () => authListeners.delete(cb) } } };
   },
-  async resetPasswordForEmail(_email?: string, _opts?: any) { return { data: null, error: authErr("Password reset emails aren't set up yet. Please contact support.") }; },
+  async resetPasswordForEmail(email: string, _opts?: any) {
+    const r = await requestPasswordResetFn({ data: { email } });
+    return { data: null, error: authErr(r.error ?? null) };
+  },
+  async resetPasswordWithCode(email: string, code: string, password: string) {
+    const r = await resetPasswordFn({ data: { email, code, password } });
+    if (r.user) notify("SIGNED_IN", r.user);
+    return { data: { user: r.user }, error: authErr(r.error) };
+  },
   async signInWithOtp(_o?: any) { return unavailable("Email codes"); },
   async verifyOtp(_o?: any) { return unavailable("Email codes"); },
   mfa: {

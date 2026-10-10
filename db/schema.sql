@@ -39,4 +39,10 @@ CREATE TABLE IF NOT EXISTS auth_users (id TEXT PRIMARY KEY, email TEXT UNIQUE NO
 CREATE TABLE IF NOT EXISTS auth_identities (provider TEXT NOT NULL, provider_user_id TEXT NOT NULL, user_id TEXT NOT NULL, PRIMARY KEY(provider, provider_user_id));
 CREATE TABLE IF NOT EXISTS auth_sessions (token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, expires_at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(user_id);
-CREATE TABLE IF NOT EXISTS auth_rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, window_start INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS auth_rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, window_start INTEGER NOT NULL);-- Security system
+CREATE TABLE IF NOT EXISTS security_restrictions (scope TEXT NOT NULL, subject TEXT NOT NULL, reason TEXT, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY(scope, subject));
+CREATE TABLE IF NOT EXISTS security_events (id TEXT PRIMARY KEY, type TEXT NOT NULL, decision TEXT, subject TEXT, reasons TEXT DEFAULT '[]', details TEXT DEFAULT '{}', created_at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS security_events_created ON security_events(created_at);
+CREATE TABLE IF NOT EXISTS credit_ledger (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, kind TEXT NOT NULL, amount INTEGER NOT NULL, idempotency_key TEXT NOT NULL UNIQUE, reason TEXT, created_at INTEGER NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS credit_ledger_one_initial ON credit_ledger(user_id) WHERE kind = 'initial_grant';
+CREATE INDEX IF NOT EXISTS credit_ledger_user ON credit_ledger(user_id);

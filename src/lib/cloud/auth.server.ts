@@ -88,7 +88,7 @@ export async function startSession(userId: string) {
   await d1("INSERT INTO auth_sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)", [await sha256(token), userId, expires]);
   await d1("DELETE FROM auth_sessions WHERE user_id = ? AND expires_at <= ?", [userId, now]);
   await d1(
-    "DELETE FROM auth_sessions WHERE user_id = ? AND token_hash NOT IN (SELECT token_hash FROM auth_sessions WHERE user_id = ? ORDER BY expires_at DESC LIMIT ?)",
+    "DELETE FROM auth_sessions WHERE user_id = ? AND token_hash NOT IN (SELECT token_hash FROM auth_sessions WHERE user_id = ? ORDER BY expires_at DESC, rowid DESC LIMIT ?)",
     [userId, userId, MAX_SESSIONS],
   );
   setCookie(SESSION_COOKIE, token, { ...SESSION_COOKIE_OPTIONS, maxAge: SESSION_DAYS * 86400 });

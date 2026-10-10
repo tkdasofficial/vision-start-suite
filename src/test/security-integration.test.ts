@@ -84,10 +84,12 @@ describe("sessions (real SQL, isolated DB)", () => {
     expect(state.db.prepare("SELECT COUNT(*) n FROM auth_sessions").get().n).toBe(1);
     state.cookies.set(SESSION_COOKIE, t1);
     expect(await getCaller()).toBeNull(); // old token is dead
-    await startSession(u.id);
+    state.cookies.clear();
+    await startSession(u.id); // a second device
     await endSession();
     expect(await getCaller()).toBeNull();
-    expect(state.db.prepare("SELECT COUNT(*) n FROM auth_sessions").get().n).toBe(0);
+    // Only the signed-out device's session is removed; the other device stays signed in.
+    expect(state.db.prepare("SELECT COUNT(*) n FROM auth_sessions").get().n).toBe(1);
   });
   it("caps concurrent sessions and rejects expired / banned sessions", async () => {
     const u = await createUser("c@example.com", { password: "password123" });

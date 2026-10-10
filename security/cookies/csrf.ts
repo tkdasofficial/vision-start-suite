@@ -2,7 +2,8 @@
 import type { RequestFacts } from "../types";
 
 export function isSameOriginRequest(req: RequestFacts, extraAllowedOrigins: string[] = []): boolean {
-  if (req.secFetchSite === "cross-site") return false;
+  // Sec-Fetch-Site is set by the browser and cannot be forged by a web page; prefer it.
+  if (req.secFetchSite) return req.secFetchSite !== "cross-site";
   if (!req.origin) return true; // non-browser or same-origin navigations without Origin
   try {
     const o = new URL(req.origin);

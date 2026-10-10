@@ -125,9 +125,9 @@ describe("network, identity, cookies", () => {
   });
   it("blocks cross-site requests", () => {
     expect(isSameOriginRequest(human)).toBe(true);
-    expect(isSameOriginRequest({ ...human, origin: "https://evil.test" })).toBe(false);
+    expect(isSameOriginRequest({ ...human, secFetchSite: null, origin: "https://evil.test" })).toBe(false);
     expect(isSameOriginRequest({ ...human, secFetchSite: "cross-site" })).toBe(false);
-    expect(isSameOriginRequest({ ...human, origin: "https://auth.workers.dev" }, ["https://auth.workers.dev"])).toBe(true);
+    expect(isSameOriginRequest({ ...human, secFetchSite: null, origin: "https://auth.workers.dev" }, ["https://auth.workers.dev"])).toBe(true);
   });
   it("generates uniform 8-digit codes", () => {
     for (let i = 0; i < 100; i++) expect(randomDigits(8)).toMatch(/^\d{8}$/);

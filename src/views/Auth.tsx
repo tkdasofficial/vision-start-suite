@@ -13,6 +13,8 @@ const Auth = () => {
   const { toast } = useToast();
   const { pathname } = useLocation();
   const [mode, setMode] = useState<Mode>(pathname === "/signup" ? "signup" : pathname === "/forgot-password" ? "forgot" : "login");
+  // Two-step email auth: "email" first (validated server-side), then "password".
+  const [step, setStep] = useState<"email" | "password">("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +29,26 @@ const Auth = () => {
     const msg = new URLSearchParams(window.location.search).get("error");
     if (msg) toast({ title: "Sign-in problem", description: msg, variant: "destructive" });
   }, []);
+
+  // Step 1: validate the email on the server before showing the password field.
+  const handleEmailContinue = async () => {
+    if (!email) return;
+    setLoading(true);
+    try {
+      const { checkEmailFn } = await import("@/lib/cloud/auth.functions");
+      const r = await checkEmailFn({ data: { email } });
+      if (!r.ok) throw new Error(r.error ?? "Enter a valid email address.");
+      if (mode === "forgot") {
+        await handleEmailAuth();
+        return;
+      }
+      setStep("password");
+    } catch (e: any) {
+      toast({ title: "Check your email", description: e.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailAuth = async () => {
     if (!email) return;

@@ -129,7 +129,7 @@ const Auth = () => {
     }
   };
 
-  const handleOAuth = async (provider: "google" | "github") => {
+  const handleOAuth = async (provider: "google" | "github" | "cloudflare") => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: window.location.origin },

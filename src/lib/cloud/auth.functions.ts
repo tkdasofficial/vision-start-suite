@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 type AuthResult = { user: any | null; error: string | null; needsVerification?: boolean };
 
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(async () => {
@@ -9,25 +8,49 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(async ()
   return { user: c?.user ?? null, isAdmin: c?.isAdmin ?? false };
 });
 
+type Hints = { honeypot?: string; elapsedMs?: number };
+
+async function sec() {
+  const s = await import("./security.server");
+  const core = await import("../../../security");
+  return { ...s, ...core };
+}
+
 export const signUpFn = createServerFn({ method: "POST" })
-  .inputValidator((d: { email: string; password: string; fullName?: string }) => d)
+  .inputValidator((d: { email: string; password: string; fullName?: string; hints?: Hints }) => d)
   .handler(async ({ data }): Promise<AuthResult> => {
     const a = await import("./auth.server");
     const { d1 } = await import("./d1.server");
-    const email = String(data.email ?? "").trim().toLowerCase();
-    const password = String(data.password ?? "");
-    if (!EMAIL.test(email) || email.length > 254) return { user: null, error: "Enter a valid email address." };
+    const S = await sec();
+    const email = S.normalizeEmail(data?.email);
+    const password = typeof data?.password === "string" ? data.password : "";
+    if (!S.isValidEmail(email)) return { user: null, error: "Enter a valid email address." };
     if (password.length < 8 || password.length > 128) return { user: null, error: "Password must be 8–128 characters." };
-    try { await a.rateLimit(`signup:${email}`, 5, 900); } catch (e: any) { return { user: null, error: e.message }; }
+    const facts = S.currentFacts();
+    try { S.assertSameOrigin(facts); } catch (e: any) { return { user: null, error: e.message }; }
+    const hints: Hints = {
+      honeypot: typeof data?.hints?.honeypot === "string" ? data.hints.honeypot.slice(0, 100) : undefined,
+      elapsedMs: Number.isFinite(data?.hints?.elapsedMs) ? Number(data.hints!.elapsedMs) : undefined,
+    };
+    const keys = await S.keysFor(facts, email);
+    const verdict = await S.evaluateSignup(S.d1Store, { entry: "email", email, req: facts, hints, keys, checkDns: (d) => S.checkMailDomain(d) });
+    if (!verdict.allowed) return { user: null, error: verdict.userMessage };
     const exists = await d1("SELECT id FROM auth_users WHERE email = ?", [email]);
     if (exists[0]) return { user: null, error: "An account with this email already exists." };
     const fullName = String(data.fullName ?? "").trim().slice(0, 100);
-    const row = await a.createUser(email, { password, metadata: fullName ? { full_name: fullName } : {} });
+    try {
+      await a.createUser(email, { password, metadata: fullName ? { full_name: fullName } : {} });
+    } catch (e) {
+      // Concurrent duplicate signup hits the UNIQUE(email) constraint.
+      console.error("[signup] create failed", (e as Error).message);
+      return { user: null, error: "An account with this email already exists." };
+    }
+    await S.recordAccountCreated(S.d1Store, email, keys);
     try {
       const { sendOtp } = await import("./otp.server");
       await sendOtp(email);
     } catch (e) {
-      console.error("[signup] otp send failed", e);
+      console.error("[signup] otp send failed", (e as Error).message);
       return { user: null, error: "Account created, but we couldn't send the verification email. Please try signing in to resend it." };
     }
     // Session starts only after the email code is verified.
@@ -39,15 +62,28 @@ export const verifyEmailFn = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<AuthResult> => {
     const a = await import("./auth.server");
     const { d1 } = await import("./d1.server");
-    const email = String(data.email ?? "").trim().toLowerCase();
-    const code = String(data.code ?? "").trim();
-    if (!EMAIL.test(email) || !/^\d{8}$/.test(code)) return { user: null, error: "Enter the 8-digit code from your email." };
-    try { await a.rateLimit(`verify:${email}`, 10, 900); } catch (e: any) { return { user: null, error: e.message }; }
+    const S = await sec();
+    const email = S.normalizeEmail(data?.email);
+    const code = String(data?.code ?? "").trim();
+    if (!S.isValidEmail(email) || !/^\d{8}$/.test(code)) return { user: null, error: "Enter the 8-digit code from your email." };
+    const facts = S.currentFacts();
+    try { S.assertSameOrigin(facts); } catch (e: any) { return { user: null, error: e.message }; }
+    const keys = await S.keysFor(facts, email);
+    const L = S.SECURITY_CONFIG.limits;
+    try {
+      await S.enforceLimits(S.d1Store, [[`otpv:email:${keys.emailKey}`, L.otpVerifyPerEmail], [keys.ipKey && `otpv:ip:${keys.ipKey}`, L.otpVerifyPerIp]]);
+    } catch (e: any) { return { user: null, error: e.message }; }
     const { checkOtp } = await import("./otp.server");
-    if (!(await checkOtp(email, code))) return { user: null, error: "That code is incorrect or expired." };
-    const row: any = (await d1("SELECT * FROM auth_users WHERE email = ?", [email]))[0];
+    if (!(await checkOtp(email, code))) {
+      if (keys.ipKey) await S.d1Store.hit(`vfail:ip:${keys.ipKey}`, 3600, S.nowSec());
+      await S.audit(S.d1Store, { type: "otp.failed", decision: "DENY", subject: keys.emailKey });
+      return { user: null, error: "That code is incorrect or expired." };
+    }
+    const row: any = (await d1("SELECT u.*, p.is_banned FROM auth_users u LEFT JOIN profiles p ON p.id = u.id WHERE u.email = ?", [email]))[0];
     if (!row) return { user: null, error: "Account not found. Please sign up again." };
+    if (row.is_banned) return { user: null, error: "This account has been suspended." };
     await d1("UPDATE auth_users SET email_verified = 1 WHERE id = ?", [row.id]);
+    await S.grantWelcomeCredits(row.id, email, facts);
     await a.startSession(row.id);
     return { user: a.toPublicUser(row), error: null };
   });
@@ -55,10 +91,17 @@ export const verifyEmailFn = createServerFn({ method: "POST" })
 export const resendVerificationFn = createServerFn({ method: "POST" })
   .inputValidator((d: { email: string }) => d)
   .handler(async ({ data }) => {
-    const a = await import("./auth.server");
     const { d1 } = await import("./d1.server");
-    const email = String(data.email ?? "").trim().toLowerCase();
-    try { await a.rateLimit(`resend:${email}`, 3, 900); } catch (e: any) { return { ok: false, error: e.message }; }
+    const S = await sec();
+    const email = S.normalizeEmail(data?.email);
+    if (!S.isValidEmail(email)) return { ok: false, error: "Enter a valid email address." };
+    const facts = S.currentFacts();
+    try { S.assertSameOrigin(facts); } catch (e: any) { return { ok: false, error: e.message }; }
+    const keys = await S.keysFor(facts, email);
+    const L = S.SECURITY_CONFIG.limits;
+    try {
+      await S.enforceLimits(S.d1Store, [[`otpr:email:${keys.emailKey}`, L.otpResendPerEmail], [keys.ipKey && `otpr:ip:${keys.ipKey}`, L.otpResendPerIp]]);
+    } catch (e: any) { return { ok: false, error: e.message }; }
     const row: any = (await d1("SELECT id, email_verified FROM auth_users WHERE email = ?", [email]))[0];
     if (!row || row.email_verified) return { ok: true, error: null }; // don't reveal account state
     try {
@@ -66,7 +109,7 @@ export const resendVerificationFn = createServerFn({ method: "POST" })
       await sendOtp(email);
       return { ok: true, error: null };
     } catch (e) {
-      console.error("[resend] otp send failed", e);
+      console.error("[resend] otp send failed", (e as Error).message);
       return { ok: false, error: "Couldn't send the email. Please try again in a moment." };
     }
   });
@@ -76,22 +119,44 @@ export const signInFn = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<AuthResult> => {
     const a = await import("./auth.server");
     const { d1 } = await import("./d1.server");
-    const email = String(data.email ?? "").trim().toLowerCase();
-    try { await a.rateLimit(`signin:${email}`, 10, 900); } catch (e: any) { return { user: null, error: e.message }; }
+    const S = await sec();
+    const email = S.normalizeEmail(data?.email);
+    const password = typeof data?.password === "string" ? data.password.slice(0, 256) : "";
+    if (!S.isValidEmail(email) || !password) return { user: null, error: "Invalid email or password." };
+    const facts = S.currentFacts();
+    try { S.assertSameOrigin(facts); } catch (e: any) { return { user: null, error: e.message }; }
+    const keys = await S.keysFor(facts, email);
+    const L = S.SECURITY_CONFIG.limits;
+    // Login limits are separate from signup restrictions, so existing accounts can still sign in.
+    try {
+      await S.enforceLimits(S.d1Store, [[`login:email:${keys.emailKey}`, L.loginPerEmail], [keys.ipKey && `login:ip:${keys.ipKey}`, L.loginPerIp]]);
+    } catch (e: any) { return { user: null, error: e.message }; }
     const row: any = (await d1("SELECT u.*, p.is_banned FROM auth_users u LEFT JOIN profiles p ON p.id = u.id WHERE u.email = ?", [email]))[0];
-    const ok = row?.password_hash && (await a.verifyPassword(String(data.password ?? ""), row.salt, row.password_hash));
-    if (!ok) return { user: null, error: "Invalid email or password." };
+    const ok = row?.password_hash && (await a.verifyPassword(password, row.salt, row.password_hash));
+    if (!ok) {
+      await S.audit(S.d1Store, { type: "login.failed", decision: "DENY", subject: keys.emailKey });
+      return { user: null, error: "Invalid email or password." };
+    }
     if (row.is_banned) return { user: null, error: "This account has been suspended." };
     if (!row.email_verified) {
       try {
+        await S.enforceLimits(S.d1Store, [[`otpr:email:${keys.emailKey}`, L.otpResendPerEmail]]);
         const { sendOtp } = await import("./otp.server");
         await sendOtp(email);
-      } catch (e) { console.error("[signin] otp send failed", e); }
+      } catch (e) { console.error("[signin] otp send skipped", (e as Error).message); }
       return { user: null, error: null, needsVerification: true };
     }
     await a.startSession(row.id);
     return { user: a.toPublicUser(row), error: null };
   });
+
+export const getCreditBalanceFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { getCaller } = await import("./auth.server");
+  const c = await getCaller();
+  if (!c) return { balance: 0 };
+  const { d1Store } = await import("./security.server");
+  return { balance: await d1Store.creditBalance(c.user.id) };
+});
 
 export const signOutFn = createServerFn({ method: "POST" }).handler(async () => {
   const { endSession } = await import("./auth.server");

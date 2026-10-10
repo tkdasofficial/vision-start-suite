@@ -109,3 +109,15 @@ export function assertSameOrigin(facts: RequestFacts) {
   const extra = [process.env["AUTH_ORIGIN"] ?? ""].filter(Boolean);
   if (!isSameOriginRequest(facts, extra)) throw new Error("Request blocked. Please reload the page and try again.");
 }
+
+/** Grants welcome credits once the account's email is verified (idempotent, risk-gated). */
+export async function grantWelcomeCredits(userId: string, email: string, facts: RequestFacts) {
+  const { grantInitialCredits, isDisposableDomain, emailDomain } = await import("../../../security");
+  const keys = await keysFor(facts, email);
+  try {
+    return await grantInitialCredits(d1Store, { userId, emailVerified: true, networkKey: keys.networkKey, deviceKey: keys.deviceKey, disposableEmail: isDisposableDomain(emailDomain(email)) });
+  } catch (e) {
+    console.error("[credits] initial grant failed", (e as Error).message);
+    return "ineligible" as const;
+  }
+}

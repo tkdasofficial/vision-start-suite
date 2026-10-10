@@ -1,21 +1,23 @@
-// Server-only 8-digit email verification codes, stored hashed in D1.
+// Server-only 8-digit email verification codes, stored as keyed hashes in D1.
 import { d1 } from "./d1.server";
-import { randomToken, sha256 } from "./auth.server";
+import { randomToken } from "./auth.server";
 import { sendMail } from "./mail.server";
+import { randomDigits, safeEqual, SECURITY_CONFIG } from "../../../security";
+import { pseudonym } from "./security.server";
 
-const OTP_TTL_SEC = 10 * 60;
-const MAX_ATTEMPTS = 5;
+const OTP_TTL_SEC = SECURITY_CONFIG.otp.ttlSec;
+const MAX_ATTEMPTS = SECURITY_CONFIG.otp.maxAttempts;
 
 export function generateOtp(): string {
-  const a = new Uint32Array(1);
-  crypto.getRandomValues(a);
-  return String(a[0] % 100_000_000).padStart(8, "0");
+  return randomDigits(8);
 }
 
-/** Creates and emails a fresh 8-digit code for the address. */
+const codeHash = (email: string, code: string) => pseudonym("otp", `${email}:${code}`);
+
+/** Creates and emails a fresh 8-digit code for the address (replaces any previous code). */
 export async function sendOtp(email: string) {
   const code = generateOtp();
-  const hash = await sha256(`${email}:${code}`);
+  const hash = await codeHash(email, code);
   const now = new Date().toISOString();
   const expires = Math.floor(Date.now() / 1000) + OTP_TTL_SEC;
   await d1(
@@ -29,20 +31,18 @@ export async function sendOtp(email: string) {
   );
 }
 
-/** Checks a code; returns true and consumes it when valid. */
+/** Checks a code. Attempts are counted atomically and a valid code is consumed exactly once. */
 export async function checkOtp(email: string, code: string): Promise<boolean> {
-  const row = (await d1<{ code_hash: string; expires_at: number; attempts: number }>(
-    "SELECT code_hash, expires_at, attempts FROM auth_otps WHERE email = ?", [email],
+  const now = Math.floor(Date.now() / 1000);
+  const row = (await d1<{ code_hash: string; attempts: number }>(
+    "UPDATE auth_otps SET attempts = attempts + 1 WHERE email = ? AND expires_at >= ? AND attempts < ? RETURNING code_hash, attempts",
+    [email, now, MAX_ATTEMPTS],
   ))[0];
   if (!row) return false;
-  if (row.attempts >= MAX_ATTEMPTS || row.expires_at < Math.floor(Date.now() / 1000)) return false;
-  const ok = row.code_hash === (await sha256(`${email}:${code}`));
-  if (ok) {
-    await d1("DELETE FROM auth_otps WHERE email = ?", [email]);
-  } else {
-    await d1("UPDATE auth_otps SET attempts = attempts + 1 WHERE email = ?", [email]);
-  }
-  return ok;
+  if (!safeEqual(row.code_hash, await codeHash(email, code))) return false;
+  // Single use: only one concurrent request can delete the row.
+  const consumed = await d1("DELETE FROM auth_otps WHERE email = ? AND code_hash = ? RETURNING email", [email, row.code_hash]);
+  return consumed.length > 0;
 }
 
 export { randomToken };

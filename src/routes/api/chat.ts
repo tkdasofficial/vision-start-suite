@@ -22,6 +22,12 @@ export const Route = createFileRoute("/api/chat")({
         const { getCaller } = await import("@/lib/cloud/auth.server");
         const caller = await getCaller();
         if (!caller) return Response.json({ error: "Please sign in to chat." }, { status: 401 });
+        {
+          const { d1Store } = await import("@/lib/cloud/security.server");
+          const { enforceLimits, SECURITY_CONFIG } = await import("../../../security");
+          try { await enforceLimits(d1Store, [[`chat:user:${caller.user.id}`, SECURITY_CONFIG.limits.chatPerUser]]); }
+          catch (e: any) { return Response.json({ error: e.message }, { status: 429 }); }
+        }
 
         const body: any = await request.json().catch(() => null);
         const raw = Array.isArray(body?.messages) ? body.messages.slice(-30) : [];

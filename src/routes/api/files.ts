@@ -19,6 +19,14 @@ export const Route = createFileRoute("/api/files")({
         const { getCaller } = await import("@/lib/cloud/auth.server");
         const caller = await getCaller();
         if (!caller) return Response.json({ error: "Please sign in." }, { status: 401 });
+        {
+          const { d1Store, factsFrom, assertSameOrigin } = await import("@/lib/cloud/security.server");
+          const { enforceLimits, SECURITY_CONFIG } = await import("../../../security");
+          try {
+            assertSameOrigin(factsFrom(request.headers, null));
+            await enforceLimits(d1Store, [[`upload:user:${caller.user.id}`, SECURITY_CONFIG.limits.uploadPerUser]]);
+          } catch (e: any) { return Response.json({ error: e.message }, { status: 429 }); }
+        }
         const form = await request.formData().catch(() => null);
         const file = form?.get("file");
         if (!(file instanceof File)) return Response.json({ error: "No file provided." }, { status: 400 });

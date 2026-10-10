@@ -1,9 +1,11 @@
 // Server-only account, password and session handling backed by D1.
 import { getCookie, setCookie, deleteCookie } from "@tanstack/react-start/server";
 import { d1 } from "./d1.server";
+import { SECURITY_CONFIG, SESSION_COOKIE_OPTIONS, nowSec, RateLimitError } from "../../../security";
 
 export const SESSION_COOKIE = "vision_session";
-const SESSION_DAYS = 30;
+const SESSION_DAYS = SECURITY_CONFIG.session.days;
+const MAX_SESSIONS = SECURITY_CONFIG.session.maxConcurrent;
 const PBKDF2_ITERATIONS = 100_000;
 
 export type PublicUser = {
@@ -54,17 +56,10 @@ export function toPublicUser(row: any, provider = "email"): PublicUser {
   return { id: row.id, email: row.email, created_at: row.created_at, user_metadata: meta, app_metadata: { provider } };
 }
 
-/** Limits repeated attempts per key (e.g. sign-in per email/IP). */
+/** Limits repeated attempts per key using the shared atomic security counter. */
 export async function rateLimit(key: string, max: number, windowSec: number) {
-  const now = Math.floor(Date.now() / 1000);
-  const rows = await d1<{ count: number; window_start: number }>("SELECT count, window_start FROM auth_rate_limits WHERE key = ?", [key]);
-  const row = rows[0];
-  if (!row || now - row.window_start > windowSec) {
-    await d1("INSERT INTO auth_rate_limits (key, count, window_start) VALUES (?, 1, ?) ON CONFLICT(key) DO UPDATE SET count = 1, window_start = excluded.window_start", [key, now]);
-    return;
-  }
-  if (row.count >= max) throw new Error("Too many attempts. Please wait a few minutes and try again.");
-  await d1("UPDATE auth_rate_limits SET count = count + 1 WHERE key = ?", [key]);
+  const { d1Store } = await import("./security.server");
+  if ((await d1Store.hit(`rl:${key}`, windowSec, nowSec())) > max) throw new RateLimitError();
 }
 
 export async function createUser(email: string, opts: { password?: string; metadata?: Record<string, any> }) {
@@ -83,13 +78,20 @@ export async function createUser(email: string, opts: { password?: string; metad
   return (await d1("SELECT * FROM auth_users WHERE id = ?", [id]))[0];
 }
 
+/** Issues a fresh session (rotating any current one), prunes expired ones, and caps concurrent sessions. */
 export async function startSession(userId: string) {
+  const prev = getCookie(SESSION_COOKIE);
+  if (prev) await d1("DELETE FROM auth_sessions WHERE token_hash = ?", [await sha256(prev)]);
   const token = randomToken(32);
-  const expires = Math.floor(Date.now() / 1000) + SESSION_DAYS * 86400;
+  const now = Math.floor(Date.now() / 1000);
+  const expires = now + SESSION_DAYS * 86400;
   await d1("INSERT INTO auth_sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)", [await sha256(token), userId, expires]);
-  setCookie(SESSION_COOKIE, token, {
-    httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: SESSION_DAYS * 86400,
-  });
+  await d1("DELETE FROM auth_sessions WHERE user_id = ? AND expires_at <= ?", [userId, now]);
+  await d1(
+    "DELETE FROM auth_sessions WHERE user_id = ? AND token_hash NOT IN (SELECT token_hash FROM auth_sessions WHERE user_id = ? ORDER BY expires_at DESC LIMIT ?)",
+    [userId, userId, MAX_SESSIONS],
+  );
+  setCookie(SESSION_COOKIE, token, { ...SESSION_COOKIE_OPTIONS, maxAge: SESSION_DAYS * 86400 });
 }
 
 export async function endSession() {
